@@ -1,14 +1,14 @@
 {"binaries":
   [
     {
-      "name" : "Dev-413.45",
-      "version" : "413.45",
-      "branch" : "Dev"
-    },
-    {
-      "name" : "Release-380.08",
+      "name" : "Master-380.08",
       "version" : "380.08",
       "branch" : "Master"
+    },
+    {
+      "name" : "Edge-412.02",
+      "version" : "412.02",
+      "branch" : "Edge"
     }
   ]
 }
