@@ -1,14 +1,14 @@
 {"binaries":
   [
     {
-      "name" : "Master-380.08",
+      "name" : "tinyg-master-380.08",
       "version" : "380.08",
-      "branch" : "Master"
+      "branch" : "master"
     },
     {
-      "name" : "Edge-412.02",
-      "version" : "412.02",
-      "branch" : "Edge"
+      "name" : "tinyg-edge-412.01",
+      "version" : "412.01",
+      "branch" : "edge"
     }
   ]
 }
