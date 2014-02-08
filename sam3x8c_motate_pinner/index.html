@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='utf-8'>
+	<meta http-equiv="X-UA-Compatible" content="chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+	<link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+	<link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+	<!--[if lt IE 9]>
+		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+		<title>tinyg by synthetos</title>
+	</head>
+
+	<body ng-app="pinoutApp">
+		<header>
+			<div class="inner">
+				<h1>Motate</h1>
+				<h2>SAM3X8C Pin Mixer</h2>
+			</div>
+		</header>
+
+		<div id="content-wrapper" ng-controller="PinoutCtrl">
+			<div class="inner clearfix">
+				<section id="main-content">
+					<form>
+						<table>
+							<tr>
+								<th><a href="" ng-click="predicate = ['motatePin']; handleReverse(0)">Motate</a></th>
+								<th><a href="" ng-click="predicate = ['pin', 'port']; handleReverse(1)">Pin</a></th>
+								<th><a href="" ng-click="predicate = ['pwmType', 'pwmNumber', 'pwmChannel']; handleReverse(2)">PWM</a></th>
+								<th><a href="" ng-click="predicate = ['spiCSPin']; handleReverse(3)">SPI</a></th>
+							</tr>
+							<tr ng-repeat="pin in pins | orderBy:predicate:reverse">
+								<td><input type="number" ng-model="pin.motatePin" min="0" max="200"><!-- <input type="checkbox" ng-model="pin.motateNeedsPWM" min="0" max="200"> PWM Needed --></td>
+								<td>{{pin.pinPort}}</td>
+								<td><span ng-if="pin.pwmType"><input type="checkbox" ng-model="pin.motatePWM" ng-value="pin.pwmType+pin.pwmNumber">{{pin.pwmType}}&lt;{{pin.pwmNumber}}&gt;::channel = "{{pin.pwmChannel}}"</span></td>
+								<td><span ng-if="pin.spiCSPeripheral"><input type="checkbox" ng-model="pin.motateCSUsed" min="-1" max="200">CS: {{pin.spiCSPin}}</span><span ng-if="pin.spiOtherPeripheral">Other: {{pin.spiOtherPeripheral}}</span></td>
+							</tr>
+						</table>
+					</form>
+					<pre class="prettyprint">{{pins}}</pre>
+				</section>
+			</div>
+		</div>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.11/angular.min.js"></script>
+		<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+		<script src="javascripts/app.js"></script>
+  
+	</body>
+	</html>
