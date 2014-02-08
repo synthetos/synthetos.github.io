@@ -23,6 +23,7 @@ pinoutApp.controller('PinoutCtrl', function ($scope, $http) {
     $scope.pins = [
     {
         "motatePin": 2,
+        "motateTWIUsed": true,
         "pin": "B",
         "pinPort": "B12",
         "port": 12,
@@ -30,10 +31,13 @@ pinoutApp.controller('PinoutCtrl', function ($scope, $http) {
         "pwmInverted": "true",
         "pwmNumber": 0,
         "pwmPeripheral": "B",
-        "pwmType": "PWMTimer"
+        "pwmType": "PWMTimer",
+        "twiPin": 1,
+        "twiPinType": "SDA"
     },
     {
         "motatePin": 3,
+        "motateTWIUsed": true,
         "pin": "B",
         "pinPort": "B13",
         "port": 13,
@@ -41,7 +45,9 @@ pinoutApp.controller('PinoutCtrl', function ($scope, $http) {
         "pwmInverted": "true",
         "pwmNumber": 1,
         "pwmPeripheral": "B",
-        "pwmType": "PWMTimer"
+        "pwmType": "PWMTimer",
+        "twiPin": 1,
+        "twiPinType": "SCK"
     },
     {
         "motatePin": 4,
@@ -423,7 +429,9 @@ pinoutApp.controller('PinoutCtrl', function ($scope, $http) {
         "motatePin": 104,
         "pin": "A",
         "pinPort": "A17",
-        "port": 17
+        "port": 17,
+        "twiPin": 0,
+        "twiPinType": "SDA"
     },
     {
         "motatePin": 105,
@@ -446,7 +454,9 @@ pinoutApp.controller('PinoutCtrl', function ($scope, $http) {
         "motatePin": 117,
         "pin": "A",
         "pinPort": "A18",
-        "port": 18
+        "port": 18,
+        "twiPin": 0,
+        "twiPinType": "SCK"
     },
     {
         "motatePin": 118,

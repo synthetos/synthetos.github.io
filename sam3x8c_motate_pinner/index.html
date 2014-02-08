@@ -33,13 +33,15 @@
 								<th><a href="" ng-click="predicate = ['motatePin']; handleReverse(0)">Motate</a></th>
 								<th><a href="" ng-click="predicate = ['pin', 'port']; handleReverse(1)">Pin</a></th>
 								<th><a href="" ng-click="predicate = ['pwmType', 'pwmNumber', 'pwmChannel']; handleReverse(2)">PWM</a></th>
-								<th><a href="" ng-click="predicate = ['spiCSPin']; handleReverse(3)">SPI</a></th>
+								<th><a href="" ng-click="predicate = ['spiCSPin' , 'spiOtherPeripheral']; handleReverse(3)">SPI</a></th>
+								<th><a href="" ng-click="predicate = ['twiPin', 'twiPinType']; handleReverse(4)">I2C</a></th>
 							</tr>
 							<tr ng-repeat="pin in pins | orderBy:predicate:reverse">
 								<td><input type="number" ng-model="pin.motatePin" min="0" max="200"><!-- <input type="checkbox" ng-model="pin.motateNeedsPWM" min="0" max="200"> PWM Needed --></td>
 								<td>{{pin.pinPort}}</td>
 								<td><span ng-if="pin.pwmType"><input type="checkbox" ng-model="pin.motatePWM" ng-value="pin.pwmType+pin.pwmNumber">{{pin.pwmType}}&lt;{{pin.pwmNumber}}&gt;::channel = "{{pin.pwmChannel}}"</span></td>
 								<td><span ng-if="pin.spiCSPeripheral"><input type="checkbox" ng-model="pin.motateCSUsed" min="-1" max="200">CS: {{pin.spiCSPin}}</span><span ng-if="pin.spiOtherPeripheral">Other: {{pin.spiOtherPeripheral}}</span></td>
+								<td><span ng-if="pin.twiPinType"><input type="checkbox" ng-model="pin.motateTWIUsed" min="-1" max="200">{{pin.twiPinType+pin.twiPin}}</span></td>
 							</tr>
 						</table>
 					</form>
