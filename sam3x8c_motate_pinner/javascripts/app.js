@@ -1,7 +1,7 @@
 'use strict';
 
 // Declare app level module which depends on filters, and services
-var pinoutApp = angular.module('pinoutApp', ['CornerCouch']);
+var pinoutApp = angular.module('pinoutApp', ['CornerCouch', 'ui.bootstrap']);
 
 pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
   $scope.binaries = [];
@@ -586,7 +586,17 @@ pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
   ]
   ;
 */
-  $scope.processorDoc = $scope.motatedb.getDoc("sam3x8e");
+  // $scope.processorDoc = $scope.motatedb.getDoc("sam3x8e");
+  $scope.motatedb.query("boards_by_processor", "boards_by_processor",
+      {
+        include_docs: true,
+        descending: true,
+        limit: 8
+      }
+    );
+
+  $scope.boards = $scope.motatedb.rows;
+  $scope.processorDoc = $scope.motatedb.getDoc("G2v9g");
   $scope.submitPinout = function() {
     $scope.processorDoc.save();
   };
