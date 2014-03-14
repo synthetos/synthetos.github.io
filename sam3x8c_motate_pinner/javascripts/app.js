@@ -1,16 +1,29 @@
 'use strict';
 
 // Declare app level module which depends on filters, and services
-var pinoutApp = angular.module('pinoutApp', ['CornerCouch', 'ui.bootstrap']);
+var pinoutApp = angular.module('pinoutApp', ['CornerCouch', 'ui.bootstrap', 'ng']);
 
 pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
-  $scope.binaries = [];
+  $scope.processors = {};
+  $scope.boards = {};
   
   // $scope.server = cornercouch("https://motate.iriscouch.com");
   $scope.server = cornercouch("http://localhost:5984", "GET");
   $scope.server.session();
-  $scope.motatedb = $scope.server.getDB('motate');
+  $scope.motateProcessorsView = $scope.server.getDB('motate');
+  $scope.motateBoardsView = $scope.server.getDB('motate');
   
+  $scope.processorPredicate = ['gpio_port', 'gpio_pin'];
+  $scope.processorSortColumn = 0;
+  $scope.processorReverse = false;
+    
+  $scope.handleProcessorReverse = function(column) {
+    if (column == $scope.processorSortColumn) {
+      $scope.processorReverse = !$scope.processorReverse;
+    }
+    $scope.processorSortColumn = column;
+  };
+
   $scope.predicate = ['pin', 'port'];
   $scope.sortColumn = 0;
   $scope.reverse = false;
@@ -102,502 +115,91 @@ pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
   ;
     
 /*
-  $scope.pins = [
-  {
-    "motatePin": 2,
-    "motateTWIUsed": true,
-    "pin": "B",
-    "pinPort": "B12",
-    "port": 12,
-    "pwmChannel": "A",
-    "pwmInverted": "true",
-    "pwmNumber": 0,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer",
-    "twiPin": 1,
-    "twiPinType": "SDA"
-  },
-  {
-    "motatePin": 3,
-    "motateTWIUsed": true,
-    "pin": "B",
-    "pinPort": "B13",
-    "port": 13,
-    "pwmChannel": "A",
-    "pwmInverted": "true",
-    "pwmNumber": 1,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer",
-    "twiPin": 1,
-    "twiPinType": "SCK"
-  },
-  {
-    "motatePin": 4,
-    "pin": "A",
-    "pinPort": "A27",
-    "port": 27,
-    "spiOtherPeripheral": "A"
-  },
-  {
-    "motatePin": 5,
-    "pin": "A",
-    "pinPort": "A25",
-    "port": 25,
-    "spiOtherPeripheral": "A"
-  },
-  {
-    "motatePin": 6,
-    "pin": "A",
-    "pinPort": "A26",
-    "port": 26,
-    "spiOtherPeripheral": "A"
-  },
-  {
-    "motatePin": 7,
-    "pin": "B",
-    "pinPort": "B15",
-    "port": 15,
-    "pwmChannel": "A",
-    "pwmInverted": "true",
-    "pwmNumber": 3,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "pin": "B",
-    "pinPort": "B16",
-    "port": 16,
-    "pwmChannel": "A",
-    "pwmInverted": "false",
-    "pwmNumber": 0,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "motatePin": 100,
-    "pin": "A",
-    "pinPort": "A12",
-    "port": 12,
-    "pwmChannel": "A",
-    "pwmInverted": "false",
-    "pwmNumber": 1,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "motatePin": 52,
-    "pin": "A",
-    "pinPort": "A10",
-    "port": 10
-  },
-  {
-    "motatePin": 51,
-    "pin": "A",
-    "pinPort": "A11",
-    "port": 11
-  },
-  {
-    "motatePin": 54,
-    "pin": "B",
-    "pinPort": "B26",
-    "port": 26
-  },
-  {
-    "motatePin": 53,
-    "pin": "A",
-    "pinPort": "A9",
-    "port": 9,
-    "pwmChannel": "A",
-    "pwmInverted": "true",
-    "pwmNumber": 3,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "motatePin": 114,
-    "pin": "A",
-    "pinPort": "A8",
-    "port": 8,
-    "pwmChannel": "A",
-    "pwmInverted": "true",
-    "pwmNumber": 0,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "motatePin": 22,
-    "pin": "A",
-    "pinPort": "A21",
-    "port": 21,
-    "pwmChannel": "A",
-    "pwmInverted": "false",
-    "pwmNumber": 0,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "motatePin": 43,
-    "pin": "B",
-    "pinPort": "B11",
-    "port": 11
-  },
-  {
-    "motatePin": 55,
-    "pin": "B",
-    "pinPort": "B25",
-    "port": 25,
-    "pwmChannel": "A",
-    "pwmInverted": "false",
-    "pwmNumber": 0,
-    "pwmPeripheral": "B",
-    "pwmType": "Timer"
-  },
-  {
-    "motatePin": 41,
-    "pin": "B",
-    "pinPort": "B22",
-    "port": 22
-  },
-  {
-    "motatePin": 56,
-    "pin": "B",
-    "pinPort": "B24",
-    "port": 24
-  },
-  {
-    "motatePin": 42,
-    "pin": "B",
-    "pinPort": "B14",
-    "port": 14,
-    "pwmChannel": "A",
-    "pwmInverted": "true",
-    "pwmNumber": 2,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "motatePWM": true,
-    "motatePin": 17,
-    "pin": "B",
-    "pinPort": "B17",
-    "port": 17,
-    "pwmChannel": "A",
-    "pwmInverted": "false",
-    "pwmNumber": 1,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "pin": "B",
-    "pinPort": "B23",
-    "port": 23,
-    "spiCSPeripheral": "B",
-    "spiCSPin": "3"
-  },
-  {
-    "motatePin": 33,
-    "pin": "B",
-    "pinPort": "B5",
-    "port": 5
-  },
-  {
-    "motatePin": 44,
-    "pin": "B",
-    "pinPort": "B10",
-    "port": 10
-  },
-  {
-    "motatePin": 46,
-    "pin": "B",
-    "pinPort": "B8",
-    "port": 8
-  },
-  {
-    "motatePin": 45,
-    "pin": "B",
-    "pinPort": "B9",
-    "port": 9
-  },
-  {
-    "motatePin": 34,
-    "pin": "B",
-    "pinPort": "B6",
-    "port": 6
-  },
-  {
-    "motatePin": 61,
-    "pin": "B",
-    "pinPort": "B7",
-    "port": 7
-  },
-  {
-    "motatePWM": true,
-    "motatePin": 27,
-    "pin": "B",
-    "pinPort": "B18",
-    "port": 18,
-    "pwmChannel": "A",
-    "pwmInverted": "false",
-    "pwmNumber": 2,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "motateCSUsed": true,
-    "motatePin": 40,
-    "pin": "A",
-    "pinPort": "A28",
-    "port": 28,
-    "spiCSPeripheral": "A",
-    "spiCSPin": "0"
-  },
-  {
-    "motatePWM": true,
-    "motatePin": 47,
-    "pin": "A",
-    "pinPort": "A2",
-    "port": 2,
-    "pwmChannel": "A",
-    "pwmInverted": "false",
-    "pwmNumber": 1,
-    "pwmPeripheral": "A",
-    "pwmType": "Timer"
-  },
-  {
-    "motatePin": 32,
-    "pin": "B",
-    "pinPort": "B4",
-    "port": 4
-  },
-  {
-    "motatePin": 36,
-    "pin": "B",
-    "pinPort": "B3",
-    "port": 3
-  },
-  {
-    "motatePin": 35,
-    "pin": "B",
-    "pinPort": "B2",
-    "port": 2
-  },
-  {
-    "motatePin": 24,
-    "pin": "B",
-    "pinPort": "B1",
-    "port": 1
-  },
-  {
-    "motatePin": 26,
-    "pin": "B",
-    "pinPort": "B20",
-    "port": 20,
-    "spiCSPeripheral": "B",
-    "spiCSPin": "1"
-  },
-  {
-    "motatePWM": true,
-    "motatePin": 37,
-    "pin": "B",
-    "pinPort": "B19",
-    "port": 19,
-    "pwmChannel": "A",
-    "pwmInverted": "false",
-    "pwmNumber": 3,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "motateCSUsed": true,
-    "motatePin": 50,
-    "pin": "A",
-    "pinPort": "A29",
-    "port": 29,
-    "spiCSPeripheral": "A",
-    "spiCSPin": "1"
-  },
-  {
-    "motatePin": 16,
-    "pin": "A",
-    "pinPort": "A24",
-    "port": 24
-  },
-  {
-    "motatePin": 12,
-    "pin": "A",
-    "pinPort": "A23",
-    "port": 23
-  },
-  {
-    "motatePin": 13,
-    "pin": "A",
-    "pinPort": "A22",
-    "port": 22
-  },
-  {
-    "motatePin": 14,
-    "pin": "A",
-    "pinPort": "A6",
-    "port": 6,
-    "pwmChannel": "B",
-    "pwmInverted": "false",
-    "pwmNumber": 2,
-    "pwmPeripheral": "A",
-    "pwmType": "Timer"
-  },
-  {
-    "motatePin": 25,
-    "pin": "A",
-    "pinPort": "A4",
-    "port": 4
-  },
-  {
-    "motatePWM": true,
-    "motatePin": 57,
-    "pin": "A",
-    "pinPort": "A3",
-    "port": 3,
-    "pwmChannel": "B",
-    "pwmInverted": "false",
-    "pwmNumber": 1,
-    "pwmPeripheral": "A",
-    "pwmType": "Timer"
-  },
-  {
-    "motatePin": 23,
-    "pin": "B",
-    "pinPort": "B0",
-    "port": 0
-  },
-  {
-    "motateCSUsed": true,
-    "motatePin": 60,
-    "pin": "B",
-    "pinPort": "B21",
-    "port": 21,
-    "spiCSPeripheral": "B",
-    "spiCSPin": "2"
-  },
-  {
-    "motatePin": 15,
-    "pin": "A",
-    "pinPort": "A16",
-    "port": 16
-  },
-  {
-    "motatePin": 101,
-    "pin": "A",
-    "pinPort": "A13",
-    "port": 13,
-    "pwmChannel": "A",
-    "pwmInverted": "true",
-    "pwmNumber": 2,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "motatePin": 102,
-    "pin": "A",
-    "pinPort": "A14",
-    "port": 14
-  },
-  {
-    "motatePin": 103,
-    "pin": "A",
-    "pinPort": "A15",
-    "port": 15
-  },
-  {
-    "motatePin": 104,
-    "pin": "A",
-    "pinPort": "A17",
-    "port": 17,
-    "twiPin": 0,
-    "twiPinType": "SDA"
-  },
-  {
-    "motatePin": 105,
-    "pin": "A",
-    "pinPort": "A0",
-    "port": 0,
-    "pwmChannel": "A",
-    "pwmInverted": "false",
-    "pwmNumber": 3,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "motatePin": 116,
-    "pin": "A",
-    "pinPort": "A1",
-    "port": 1
-  },
-  {
-    "motatePin": 117,
-    "pin": "A",
-    "pinPort": "A18",
-    "port": 18,
-    "twiPin": 0,
-    "twiPinType": "SCK"
-  },
-  {
-    "motatePin": 118,
-    "pin": "A",
-    "pinPort": "A19",
-    "port": 19,
-    "pwmChannel": "A",
-    "pwmInverted": "true",
-    "pwmNumber": 1,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "pin": "B",
-    "pinPort": "B27",
-    "port": 27,
-    "pwmChannel": "A",
-    "pwmInverted": "false",
-    "pwmNumber": 0,
-    "pwmPeripheral": "B",
-    "pwmType": "Timer"
-  },
-  {
-    "pin": "A",
-    "pinPort": "A20",
-    "port": 20,
-    "pwmChannel": "A",
-    "pwmInverted": "false",
-    "pwmNumber": 2,
-    "pwmPeripheral": "B",
-    "pwmType": "PWMTimer"
-  },
-  {
-    "motatePin": 112,
-    "pin": "A",
-    "pinPort": "A5",
-    "port": 5
-  },
-  {
-    "motatePin": 113,
-    "pin": "A",
-    "pinPort": "A7",
-    "port": 7
-  }
-  ]
-  ;
+  $scope.pins = [];
 */
-  // $scope.processorDoc = $scope.motatedb.getDoc("sam3x8e");
-  $scope.motatedb.query("boards_by_processor", "boards_by_processor",
-      {
-        include_docs: true,
-        descending: true,
-        limit: 8
-      }
-    );
 
-  $scope.boards = $scope.motatedb.rows;
-  $scope.processorDoc = $scope.motatedb.getDoc("G2v9g");
-  $scope.submitPinout = function() {
-    $scope.processorDoc.save();
+  $scope.has_pwm_changed = function() {
+    if ($scope.has_pwm == true) {
+      if ($scope._old_pwm) {
+        $scope.pwm = delete $scope._old_pwm;
+      } else {
+        $scope.pwm = {};
+      }
+    } else {
+      $scope._old_pwm = delete $scope.pwm;
+    }
+  }
+
+
+  $scope.processorDoc = {};
+
+  $scope.peripheralOptions = [{'name':'Per. A', 'value':'A'}, {'name':'Per. B', 'value':'B'}];
+
+  $scope.timerTypeOptions = ['Timer', 'PWMTimer'];
+  $scope.timerChannelOptions = ['A', 'B']
+  $scope.timerNumberOptions = [0, 1, 2, 3];
+  $scope.pwmTimerNumberOptions = [0, 1, 2, 3];
+
+  $scope.spiPinOptions = [0, 1, 2, 3];
+  $scope.spiTypeOptions = [{'name':'CS', 'value':'cs'}, {'name':'non-CS', 'value':'other'}];
+
+  $scope.twiNumberOptions = [0, 1];
+  $scope.twiTypeOptions = [{'name':'SDA', 'value':'SDA'}, {'name':'SCK', 'value':'SCK'}];
+
+  $scope.motateProcessorsView.query("search", "processors",
+    {
+      include_docs: true,
+      descending: true,
+      limit: 8
+    }
+  ).success(
+    function() {
+      for (var rowIdx in $scope.motateProcessorsView.rows) {
+        var row = $scope.motateProcessorsView.rows[rowIdx];
+        $scope.processors[row.key] = row.doc;
+      }
+      $scope.processorDoc = $scope.processors[$scope.motateProcessorsView.rows[0].key]
+    }
+  );
+
+  $scope.submitProcessor = function() {
+    // if (!$scope.processorDoc instanceof $scope.motateProcessorsView.docClass) {
+      var processorDoc = $scope.motateProcessorsView.newDoc($scope.processorDoc);
+    // }
+
+    processorDoc.save();
   };
+
+
+  $scope.boardDoc = {};
+
+  $scope.motateBoardsView.query("search", "boards_by_processor",
+    {
+      include_docs: true,
+      descending: true,
+      limit: 8
+    }
+  ).success(
+    function() {
+      for (var rowIdx in $scope.motateBoardsView.rows) {
+        var row = $scope.motateBoardsView.rows[rowIdx];
+        $scope.boards[row.key] = row.doc;
+      }
+      
+      $scope.boardDoc = $scope.boards[$scope.motateBoardsView.rows[0].key];
+    }
+  );
+
+  $scope.submitBoard = function() {
+    // if (!$scope.boardDoc instanceof $scope.motateBoardsView.docClass) {
+      var boardDoc = $scope.motateBoardsView.newDoc($scope.boardDoc);
+    // }
+
+    boardDoc.save();
+  };
+  
+  
+  $scope.getProcessorPin = function(boardPin) {
+    
+  }
 });

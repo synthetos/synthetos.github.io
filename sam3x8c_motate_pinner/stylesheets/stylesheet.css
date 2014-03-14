@@ -101,7 +101,7 @@ header h2 {
 }
 
 #main-content {
-  width: 690px;
+  width: 100%;
   float: left;
 }
 
@@ -356,6 +356,28 @@ footer a:hover {
   color: #444;
 }
 
+.align-left-cell {
+ text-align: left;
+}
+.align-right-cell {
+ text-align: right;
+}
+.align-center-cell {
+ text-align: center;
+}
+
+.breathe th {
+ border: 1px solid #ebebeb;
+ background-color: rgba(0, 0, 0, 0.15);
+}
+
+.breathe th,
+.breathe td {
+ padding: 3px;
+ margin: 3px;
+}
+
+
 /* MISC */
 .clearfix:after {
   clear: both;
@@ -479,3 +501,4 @@ footer a:hover {
 
 /* Mobile Portrait Size to Mobile Landscape Size (devices and browsers) */
 @media only screen and (max-width: 479px) {}
+

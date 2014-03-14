@@ -29,10 +29,60 @@
 			<div class="inner clearfix">
 				<section id="main-content">
 					<tabset>
-						<tab heading="Form">
-							<form name="pinoutForm" ng-submit="submitPinout()">
-								<select ng-model="processorDoc" ng-options="board.doc as board.doc._id group by board.doc.processor for board in motatedb.rows"></select>
-								<table>
+						<tab heading="Processors">
+							<form name="processorForm" ng-submit="submitProcessor()">
+								<select ng-model="$parent.processorDoc" ng-options="processor.doc as processor.doc._id for processor in motateProcessorsView.rows"></select>
+								<table id="processorTable" class="breathe">
+									<tr>
+										<th class="align-left-cell"><a href="" ng-click="processorPredicate = ['pin']; handleProcessorReverse(0)">Pin</a></th>
+										<th class="align-left-cell"><a href="" ng-click="processorPredicate = ['gpio_port','gpio_pin']; handleProcessorReverse(0)">GPIO</a></th>
+										<th class="align-left-cell"><a href="" ng-click="processorPredicate = ['!has_pwm', 'pwm.type', 'pwm.number', 'pwm.channel']; handleProcessorReverse(1)">PWM</a></th>
+										<th class="align-left-cell"><a href="" ng-click="processorPredicate = ['!has_spi', 'spi.type', 'spi.pin']; handleProcessorReverse(2)">SPI</a></th>
+										<th class="align-left-cell"><a href="" ng-click="processorPredicate = ['!has_twi', 'twi.number', 'twi.type']; handleProcessorReverse(3)">I2C</a></th>
+									</tr>
+									<tr ng-repeat="pin in processorDoc.pins | orderBy:processorPredicate:processorReverse">
+										<td class="align-left-cell"><input type="number" ng-model="pin.pin" min="0" max="200"></td>
+										
+										<td class="align-left-cell">{{pin.gpio_port + pin.gpio_pin}}</td>
+								
+										<td class="align-left-cell">
+											<input type="checkbox" ng-model="pin.has_pwm">
+											<span ng-if="pin.has_pwm">
+												<select ng-model="pin.pwm.type" ng-options="type for type in timerTypeOptions"></select>
+												<span ng-if="pin.pwm.type=='Timer'"><select ng-model="pin.pwm.number" ng-options="type for type in timerNumberOptions"></select><select ng-model="pin.pwm.channel" ng-options="type for type in timerChannelOptions"></select></span>
+												<span ng-if="pin.pwm.type=='PWMTimer'"><select ng-model="pin.pwm.number" ng-options="type for type in pwmTimerNumberOptions"></select></span>
+												<select ng-model="pin.pwm.peripheral" ng-options="type.value as type.name for type in peripheralOptions"></select>
+												&nbsp;<input type="checkbox" ng-model="pin.pwm.inverted" ng-value="true">&#x293E;
+												<!-- {{pin.pwm.type}}&lt;{{pin.pwm.number}}&gt;::channel = "{{pin.pwm.channel}}" -->
+											</span>
+										</td>
+								
+										<td class="align-left-cell">
+											<input type="checkbox" ng-model="pin.has_spi">
+											<span ng-if="pin.has_spi">
+												<select ng-model="pin.spi.type" ng-options="type.value as type.name for type in spiTypeOptions"></select>
+												<span ng-if="pin.spi.type=='cs'"><select ng-model="pin.spi.pin" ng-options="type for type in spiPinOptions"></select></span>
+												<select ng-model="$parent.pin.spi.peripheral" ng-options="type.value as type.name for type in peripheralOptions"></select>
+											</span>
+										</td>
+								
+										<td class="align-left-cell">
+											<input type="checkbox" ng-model="pin.has_twi">
+											<span ng-if="pin.has_twi">
+												<select ng-model="pin.twi.type" ng-options="type.value as type.name for type in twiTypeOptions"></select>
+												<select ng-model="pin.twi.number" ng-options="type for type in twiNumberOptions"></select>
+											</span>
+										</td>
+								
+									</tr>
+								</table>
+								<button class="submit" ng-disabled="processorForm.$invalid">Submit</button>
+							</form>
+						</tab>
+						<tab heading="Boards">
+							<form name="boardForm" ng-submit="submitBoard()">
+								<select ng-model="$parent.boardDoc" ng-options="board.doc as board.doc._id group by board.doc.processor for board in motateBoardsView.rows"></select>
+								<table id="boardTable" class="breathe">
 									<tr>
 										<th><a href="" ng-click="predicate = ['motatePin']; handleReverse(0)">Motate</a></th>
 										<th>MotateName</th>
@@ -41,7 +91,7 @@
 										<th><a href="" ng-click="predicate = ['spiCSPin' , 'spiOtherPeripheral']; handleReverse(3)">SPI</a></th>
 										<th><a href="" ng-click="predicate = ['twiPin', 'twiPinType']; handleReverse(4)">I2C</a></th>
 									</tr>
-									<tr ng-repeat="pin in processorDoc.pins | orderBy:predicate:reverse">
+									<tr ng-repeat="pin in boardDoc.pins | orderBy:predicate:reverse">
 										<td><input type="number" ng-model="pin.motatePin" min="0" max="200"></td>
 								
 										<td style="text-align: left; font-size: 80%">{{pinNames[pin.motatePin]}}</td>
@@ -56,12 +106,12 @@
 								
 									</tr>
 								</table>
-								<button class="submit" ng-disabled="formNewEntry.$invalid">Submit</button>
+								<button class="submit" ng-disabled="boardForm.$invalid">Submit</button>
 							</form>
 						</tab>
 						<tab heading="Output">
-<pre class="prettyprint linenums"><span ng-repeat="pin in processorDoc.pins | orderBy:['motatePin']:false">		_MAKE_MOTATE_PIN({{pin.motatePin}}, {{pin.pin}}, '{{pin.pin}}', {{pin.port}});	// {{pinNames[pin.motatePin]}}<span ng-if="pin.spiCSPeripheral">
-			_MAKE_MOTATE_SPI_CS_PIN({{pin.motatePin}}, {{pin.spiCSPeripheral}}, {{pin.spiCSPin}});</span><span ng-if="pin.spiOtherPeripheral">
+<pre class="prettyprint linenums"><span ng-repeat="pin in processorDoc.pins | orderBy:['motatePin']:false">		_MAKE_MOTATE_PIN({{pin.motatePin}}, {{pin.pin}}, '{{pin.pin}}', {{pin.port}});	// {{pinNames[pin.motatePin]}}<span ng-if="pin.spi.type=='cs'">
+			_MAKE_MOTATE_SPI_CS_PIN({{pin.motatePin}}, {{pin.spiCSPeripheral}}, {{pin.spiCSPin}});</span><span ng-if="pin.spi.type=='other'">
 			_MAKE_MOTATE_SPI_OTHER_PIN({{pin.motatePin}}, {{pin.spiOtherPeripheral}});</span><span ng-if="pin.pwmType">
 			_MAKE_MOTATE_PWM_PIN({{pin.motatePin}}, Motate::{{pin.pwmType}}&lt;{{pin.pwmNumber}}&gt;, /*Channel:*/ {{pin.pwmChannel}}, /*Peripheral:*/ {{pin.pwmPeripheral}}, /*Inverted:*/ {{pin.pwmInverted}}); <span ng-if="pin.pwmInverted">// INVERTED!</span></span>
 
