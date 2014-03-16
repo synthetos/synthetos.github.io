@@ -377,6 +377,15 @@ footer a:hover {
  margin: 3px;
 }
 
+.fix-button {
+  position: relative;
+  left: 10px;
+}
+
+.grey-sort {
+  opacity: 0.5;
+}
+
 
 /* MISC */
 .clearfix:after {

@@ -14,7 +14,7 @@
 		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
 
-		<title>tinyg by synthetos</title>
+		<title>Motate PinMuxer</title>
 	</head>
 
 	<body ng-app="pinoutApp">
@@ -29,16 +29,101 @@
 			<div class="inner clearfix">
 				<section id="main-content">
 					<tabset>
+						<tab heading="Boards">
+							<form name="boardForm" ng-submit="submitBoard(this)">
+								<select ng-model="$parent.boardDoc" ng-options="board.doc as board.doc._id group by board.doc.processor for board in motateBoardsView.rows"></select>
+								<button class="btn btn-primary btn-xs pull-right" ng-disabled="!boardForm.$dirty">Save</button>
+								<table id="boardTable" class="breathe">
+									<tr>
+										<th class="align-left-cell" ng-click="boardPredicate = ['motate_pin']; handleBoardReverse(0)">
+											Motate
+											<span ng-class="{'grey-sort':(boardSortColumn!=0), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
+										<th class="align-left-cell" ng-click="boardPredicate = ['motate_name']; handleBoardReverse(1)">
+											MotateName
+											<span ng-class="{'grey-sort':(boardSortColumn!=1), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
+										<th class="align-left-cell" ng-click="boardPredicate = [boardSortFn('gpio_port'), boardSortFn('gpio_pin')]; handleBoardReverse(2)">
+											Pin
+											<span ng-class="{'grey-sort':(boardSortColumn!=2), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
+										<th class="align-left-cell" ng-click="boardPredicate = [boardSortFn('has_pwm', 1), boardPWMSortFn('type'), boardPWMSortFn('number'), boardPWMSortFn('channel'), boardPWMSortFn('peripheral')]; handleBoardReverse(3)">
+											PWM
+											<span ng-class="{'grey-sort':(boardSortColumn!=3), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
+										<th class="align-left-cell" ng-click="boardPredicate = [boardSortFn('has_spi', 1), boardSPISortFn('type'), boardSPISortFn('pin'), boardSPISortFn('peripheral')]; handleBoardReverse(4)">
+											SPI
+											<span ng-class="{'grey-sort':(boardSortColumn!=4), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
+										<th class="align-left-cell" ng-click="boardPredicate = [boardSortFn('has_twi', 1), boardTWISortFn('number'), boardTWISortFn('type')]; handleBoardReverse(5)">
+											I2C
+											<span ng-class="{'grey-sort':(boardSortColumn!=5), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
+									</tr>
+									<tr ng-repeat="pin in boardDoc.pins | orderBy:boardPredicate:boardReverse" ng-controller="BoardPinCtrl">
+										<td class="align-left-cell"><input type="number" ng-model="pin.motate_pin" min="0" max="200"><a class="fix-button btn btn-warning btn-xs" ng-hide="pin.motate_pin|appropriatePinNum:pin.motate_name:motatePinNameLookup" ng-click="fixPinNum(pin)"><span class="glyphicon glyphicon-arrow-left"></span></button></td>
+								
+										<td class="align-left-cell">
+											<input type="text" ng-model="pin.motate_name" placeholder="motate pin name" typeahead="rule.motate_name as rule.motate_name for rule in motatePinNameLookup | appropriatePins:$viewValue:pin:processorPin" typeahead-loading="loadingLocations" class="form-control">
+											<i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
+										</td>
+								
+										<td class="align-left-cell">{{processorPin.gpio_port+processorPin.gpio_pin}}</td>
+								
+										<td class="align-left-cell">
+											<input type="checkbox" ng-model="pin.needs_pwm" ng-disabled="!processorPin.has_pwm">
+											<span ng-if="processorPin.has_pwm">
+												{{processorPin.pwm.type}}&lt;{{processorPin.pwm.number}}&gt; (Ch: {{processorPin.pwm.channel}}, Per: {{processorPin.pwm.peripheral}})
+												<span ng-if="processorPin.pwm.inverted">&#x293E;</span>
+											</span>
+										</td>
+								
+										<td class="align-left-cell">
+											<input type="checkbox" ng-model="pin.needs_spi" ng-disabled="!processorPin.has_spi">
+											<span ng-if="processorPin.has_spi">
+												<span ng-if="processorPin.spi.type=='cs'">CS</span><span ng-if="processorPin.spi.type=='other'">MISO/MOSI/SCK</span>{{processorPin.spi.number}}
+												(Per: {{processorPin.spi.peripheral}})
+											</span>
+										</td>
+								
+										<td class="align-left-cell">
+											<input type="checkbox" ng-model="pin.needs_twi" ng-disabled="!processorPin.has_twi">
+											<span ng-if="processorPin.has_twi">
+												{{processorPin.twi.type+processorPin.twi.number}}
+												<!-- (Per: {{processorPin.twi.peripheral}}) -->
+											</span>
+										</td>
+								
+									</tr>
+								</table>
+							</form>
+						</tab>
 						<tab heading="Processors">
-							<form name="processorForm" ng-submit="submitProcessor()">
+							<form name="processorForm" ng-submit="submitProcessor(this)">
 								<select ng-model="$parent.processorDoc" ng-options="processor.doc as processor.doc._id for processor in motateProcessorsView.rows"></select>
+								<button class="btn btn-primary btn-xs pull-right" ng-disabled="!processorForm.$dirty">Save</button>
 								<table id="processorTable" class="breathe">
 									<tr>
-										<th class="align-left-cell"><a href="" ng-click="processorPredicate = ['pin']; handleProcessorReverse(0)">Pin</a></th>
-										<th class="align-left-cell"><a href="" ng-click="processorPredicate = ['gpio_port','gpio_pin']; handleProcessorReverse(0)">GPIO</a></th>
-										<th class="align-left-cell"><a href="" ng-click="processorPredicate = ['!has_pwm', 'pwm.type', 'pwm.number', 'pwm.channel']; handleProcessorReverse(1)">PWM</a></th>
-										<th class="align-left-cell"><a href="" ng-click="processorPredicate = ['!has_spi', 'spi.type', 'spi.pin']; handleProcessorReverse(2)">SPI</a></th>
-										<th class="align-left-cell"><a href="" ng-click="processorPredicate = ['!has_twi', 'twi.number', 'twi.type']; handleProcessorReverse(3)">I2C</a></th>
+										<th class="align-left-cell" ng-click="processorPredicate = ['pin']; handleProcessorReverse(0)">
+											Pin
+											<span ng-class="{'grey-sort':(processorSortColumn!=0), 'btn':1, 'btn-xs':1}"><span ng-if="!processorReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="processorReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
+										<th class="align-left-cell" ng-click="processorPredicate = ['gpio_port','gpio_pin']; handleProcessorReverse(1)">
+											GPIO
+											<span ng-class="{'grey-sort':(processorSortColumn!=1), 'btn':1, 'btn-xs':1}"><span ng-if="!processorReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="processorReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
+										<th class="align-left-cell" ng-click="processorPredicate = ['!has_pwm', 'pwm.type', 'pwm.number', 'pwm.channel']; handleProcessorReverse(2)">
+											PWM
+											<span ng-class="{'grey-sort':(processorSortColumn!=2), 'btn':1, 'btn-xs':1}"><span ng-if="!processorReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="processorReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
+										<th class="align-left-cell" ng-click="processorPredicate = ['!has_spi', 'spi.type', 'spi.pin']; handleProcessorReverse(3)">
+											SPI
+											<span ng-class="{'grey-sort':(processorSortColumn!=3), 'btn':1, 'btn-xs':1}"><span ng-if="!processorReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="processorReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
+										<th class="align-left-cell" ng-click="processorPredicate = ['!has_twi', 'twi.number', 'twi.type']; handleProcessorReverse(4)">
+											I2C
+											<span ng-class="{'grey-sort':(processorSortColumn!=4), 'btn':1, 'btn-xs':1}"><span ng-if="!processorReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="processorReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
 									</tr>
 									<tr ng-repeat="pin in processorDoc.pins | orderBy:processorPredicate:processorReverse">
 										<td class="align-left-cell"><input type="number" ng-model="pin.pin" min="0" max="200"></td>
@@ -49,7 +134,7 @@
 											<input type="checkbox" ng-model="pin.has_pwm">
 											<span ng-if="pin.has_pwm">
 												<select ng-model="pin.pwm.type" ng-options="type for type in timerTypeOptions"></select>
-												<span ng-if="pin.pwm.type=='Timer'"><select ng-model="pin.pwm.number" ng-options="type for type in timerNumberOptions"></select><select ng-model="pin.pwm.channel" ng-options="type for type in timerChannelOptions"></select></span>
+												<span ng-if="pin.pwm.type=='Timer'"><select ng-model="pin.pwm.number" ng-options="type for type in timerNumberOptions"></select><select ng-model="pin.pwm.channel" ng-options="type.value as type.name for type in timerChannelOptions"></select></span>
 												<span ng-if="pin.pwm.type=='PWMTimer'"><select ng-model="pin.pwm.number" ng-options="type for type in pwmTimerNumberOptions"></select></span>
 												<select ng-model="pin.pwm.peripheral" ng-options="type.value as type.name for type in peripheralOptions"></select>
 												&nbsp;<input type="checkbox" ng-model="pin.pwm.inverted" ng-value="true">&#x293E;
@@ -76,44 +161,13 @@
 								
 									</tr>
 								</table>
-								<button class="submit" ng-disabled="processorForm.$invalid">Submit</button>
-							</form>
-						</tab>
-						<tab heading="Boards">
-							<form name="boardForm" ng-submit="submitBoard()">
-								<select ng-model="$parent.boardDoc" ng-options="board.doc as board.doc._id group by board.doc.processor for board in motateBoardsView.rows"></select>
-								<table id="boardTable" class="breathe">
-									<tr>
-										<th><a href="" ng-click="predicate = ['motatePin']; handleReverse(0)">Motate</a></th>
-										<th>MotateName</th>
-										<th><a href="" ng-click="predicate = ['pin', 'port']; handleReverse(1)">Pin</a></th>
-										<th><a href="" ng-click="predicate = ['pwmType', 'pwmNumber', 'pwmChannel']; handleReverse(2)">PWM</a></th>
-										<th><a href="" ng-click="predicate = ['spiCSPin' , 'spiOtherPeripheral']; handleReverse(3)">SPI</a></th>
-										<th><a href="" ng-click="predicate = ['twiPin', 'twiPinType']; handleReverse(4)">I2C</a></th>
-									</tr>
-									<tr ng-repeat="pin in boardDoc.pins | orderBy:predicate:reverse">
-										<td><input type="number" ng-model="pin.motatePin" min="0" max="200"></td>
-								
-										<td style="text-align: left; font-size: 80%">{{pinNames[pin.motatePin]}}</td>
-								
-										<td>{{pin.pinPort}}</td>
-								
-										<td><span ng-if="pin.pwmType"><input type="checkbox" ng-model="pin.motatePWM" ng-value="pin.pwmType+pin.pwmNumber">{{pin.pwmType}}&lt;{{pin.pwmNumber}}&gt;::channel = "{{pin.pwmChannel}}"</span></td>
-								
-										<td><span ng-if="pin.spiCSPeripheral"><input type="checkbox" ng-model="pin.motateCSUsed" min="-1" max="200">CS: {{pin.spiCSPin}}</span><span ng-if="pin.spiOtherPeripheral">Other: {{pin.spiOtherPeripheral}}</span></td>
-								
-										<td><span ng-if="pin.twiPinType"><input type="checkbox" ng-model="pin.motateTWIUsed" min="-1" max="200">{{pin.twiPinType+pin.twiPin}}</span></td>
-								
-									</tr>
-								</table>
-								<button class="submit" ng-disabled="boardForm.$invalid">Submit</button>
 							</form>
 						</tab>
 						<tab heading="Output">
-<pre class="prettyprint linenums"><span ng-repeat="pin in processorDoc.pins | orderBy:['motatePin']:false">		_MAKE_MOTATE_PIN({{pin.motatePin}}, {{pin.pin}}, '{{pin.pin}}', {{pin.port}});	// {{pinNames[pin.motatePin]}}<span ng-if="pin.spi.type=='cs'">
-			_MAKE_MOTATE_SPI_CS_PIN({{pin.motatePin}}, {{pin.spiCSPeripheral}}, {{pin.spiCSPin}});</span><span ng-if="pin.spi.type=='other'">
-			_MAKE_MOTATE_SPI_OTHER_PIN({{pin.motatePin}}, {{pin.spiOtherPeripheral}});</span><span ng-if="pin.pwmType">
-			_MAKE_MOTATE_PWM_PIN({{pin.motatePin}}, Motate::{{pin.pwmType}}&lt;{{pin.pwmNumber}}&gt;, /*Channel:*/ {{pin.pwmChannel}}, /*Peripheral:*/ {{pin.pwmPeripheral}}, /*Inverted:*/ {{pin.pwmInverted}}); <span ng-if="pin.pwmInverted">// INVERTED!</span></span>
+<pre class="prettyprint linenums"><span ng-repeat="pin in processorDoc.pins | orderBy:['motate_pin']:false">		_MAKE_MOTATE_PIN({{pin.motate_pin}}, {{pin.pin}}, '{{pin.pin}}', {{pin.port}});	// {{pinNames[pin.motate_pin]}}<span ng-if="pin.spi.type=='cs'">
+			_MAKE_MOTATE_SPI_CS_PIN({{pin.motate_pin}}, {{pin.spiCSPeripheral}}, {{pin.spiCSPin}});</span><span ng-if="pin.spi.type=='other'">
+			_MAKE_MOTATE_SPI_OTHER_PIN({{pin.motate_pin}}, {{pin.spiOtherPeripheral}});</span><span ng-if="pin.pwmType">
+			_MAKE_MOTATE_PWM_PIN({{pin.motate_pin}}, Motate::{{pin.pwmType}}&lt;{{pin.pwmNumber}}&gt;, /*Channel:*/ {{pin.pwmChannel}}, /*Peripheral:*/ {{pin.pwmPeripheral}}, /*Inverted:*/ {{pin.pwmInverted}}); <span ng-if="pin.pwmInverted">// INVERTED!</span></span>
 
 </span></pre>
 						</tab>
@@ -133,6 +187,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 		<script src="lib/bootstrap-3.1.1-dist/js/bootstrap.min.js"></script>
 		<script src="javascripts/ui-bootstrap-tpls-0.10.0.min.js"></script>
+		<script src="javascripts/ngDebounce.js"></script>
 		<script src="javascripts/app.js"></script>
   
 	</body>

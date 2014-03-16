@@ -1,7 +1,7 @@
 'use strict';
 
 // Declare app level module which depends on filters, and services
-var pinoutApp = angular.module('pinoutApp', ['CornerCouch', 'ui.bootstrap', 'ng']);
+var pinoutApp = angular.module('pinoutApp', ['CornerCouch', 'ui.bootstrap', 'ng', 'ngDebounce']);
 
 pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
   $scope.processors = {};
@@ -12,131 +12,29 @@ pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
   $scope.server.session();
   $scope.motateProcessorsView = $scope.server.getDB('motate');
   $scope.motateBoardsView = $scope.server.getDB('motate');
+  $scope.motatePinNamesView = $scope.server.getDB('motate');
   
-  $scope.processorPredicate = ['gpio_port', 'gpio_pin'];
-  $scope.processorSortColumn = 0;
-  $scope.processorReverse = false;
-    
-  $scope.handleProcessorReverse = function(column) {
-    if (column == $scope.processorSortColumn) {
-      $scope.processorReverse = !$scope.processorReverse;
-    }
-    $scope.processorSortColumn = column;
-  };
-
-  $scope.predicate = ['pin', 'port'];
-  $scope.sortColumn = 0;
-  $scope.reverse = false;
-    
-  $scope.handleReverse = function(column) {
-    if (column == $scope.sortColumn) {
-      $scope.reverse = !$scope.reverse;
-    }
-    $scope.sortColumn = column;
-  };
-    
-  $scope.pinNames = {
-    "0": "Serial0_RX",
-    "1": "Serial0_TX",
-    "10": "Socket1_SPISlaveSelectPinNumber",
-    "100": "XAxis_MinPinNumber",
-    "101": "XAxis_MaxPinNumber",
-    "102": "YAxis_MinPinNumber",
-    "103": "YAxis_MaxPinNumber",
-    "104": "ZAxis_MinPinNumber",
-    "105": "ZAxis_MaxPinNumber",
-    "106": "AAxis_MinPinNumber",
-    "107": "AAxis_MaxPinNumber",
-    "108": "BAxis_MinPinNumber",
-    "109": "BAxis_MaxPinNumber",
-    "11": "Socket1_InterruptPinNumber",
-    "110": "CAxis_MinPinNumber",
-    "111": "CAxis_MaxPinNumber",
-    "112": "Spindle_EnablePinNumber",
-    "113": "Spindle_DirPinNumber",
-    "114": "Spindle_PwmPinNumber",
-    "115": "Spindle_Pwm2PinNumber",
-    "116": "Coolant_EnablePinNumber",
-    "117": "LED_USBRXPinNumber",
-    "118": "LED_USBTXPinNumber",
-    "12": "Socket1_StepPinNumber",
-    "13": "Socket1_DirPinNumber",
-    "14": "Socket1_EnablePinNumber",
-    "15": "Socket1_Microstep_0PinNumber",
-    "16": "Socket1_Microstep_1PinNumber",
-    "17": "Socket1_VrefPinNumber",
-    "2": "I2C0_SDAPinNumber",
-    "20": "Socket2_SPISlaveSelectPinNumber",
-    "21": "Socket2_InterruptPinNumber",
-    "22": "Socket2_StepPinNumber",
-    "23": "Socket2_DirPinNumber",
-    "24": "Socket2_EnablePinNumber",
-    "25": "Socket2_Microstep_0PinNumber",
-    "26": "Socket2_Microstep_1PinNumber",
-    "27": "Socket2_VrefPinNumber",
-    "3": "I2C0_SCLPinNumber",
-    "30": "Socket3_SPISlaveSelectPinNumber",
-    "31": "Socket3_InterruptPinNumber",
-    "32": "Socket3_StepPinNumber",
-    "33": "Socket3_DirPinNumber",
-    "34": "Socket3_EnablePinNumber",
-    "35": "Socket3_Microstep_0PinNumber",
-    "36": "Socket3_Microstep_1PinNumber",
-    "37": "Socket3_VrefPinNumber",
-    "4": "SPI0_SCKPinNumber",
-    "40": "Socket4_SPISlaveSelectPinNumber",
-    "41": "Socket4_InterruptPinNumber",
-    "42": "Socket4_StepPinNumber",
-    "43": "Socket4_DirPinNumber",
-    "44": "Socket4_EnablePinNumber",
-    "45": "Socket4_Microstep_0PinNumber",
-    "46": "Socket4_Microstep_1PinNumber",
-    "47": "Socket4_VrefPinNumber",
-    "5": "SPI0_MISOPinNumber",
-    "50": "Socket5_SPISlaveSelectPinNumber",
-    "51": "Socket5_InterruptPinNumber",
-    "52": "Socket5_StepPinNumber",
-    "53": "Socket5_DirPinNumber",
-    "54": "Socket5_EnablePinNumber",
-    "55": "Socket5_Microstep_0PinNumber",
-    "56": "Socket5_Microstep_1PinNumber",
-    "57": "Socket5_VrefPinNumber",
-    "6": "SPI0_MOSIPinNumber",
-    "60": "Socket6_SPISlaveSelectPinNumber",
-    "61": "Socket6_InterruptPinNumber",
-    "62": "Socket6_StepPinNumber",
-    "63": "Socket6_DirPinNumber",
-    "64": "Socket6_EnablePinNumber",
-    "65": "Socket6_Microstep_0PinNumber",
-    "66": "Socket6_Microstep_1PinNumber",
-    "67": "Socket6_VrefPinNumber",
-    "7": "Kinen_SyncPinNumber"
-  }
-  ;
-    
-/*
-  $scope.pins = [];
-*/
-
-  $scope.has_pwm_changed = function() {
-    if ($scope.has_pwm == true) {
-      if ($scope._old_pwm) {
-        $scope.pwm = delete $scope._old_pwm;
-      } else {
-        $scope.pwm = {};
-      }
-    } else {
-      $scope._old_pwm = delete $scope.pwm;
-    }
-  }
-
-
   $scope.processorDoc = {};
-
+  $scope.processorPinLookup = {};
+  $scope.$watch('processorDoc', function(newValue, oldValue) {
+    $scope.processorPinLookup = {};
+    for (var pinIdx in $scope.processorDoc.pins) {
+      var pin = $scope.processorDoc.pins[pinIdx];
+      $scope.processorPinLookup[pin.gpio_port+pin.gpio_pin] = pin;
+    }
+  });
+  
+  $scope.lookupPin = function(pin) {
+    if (pin) {
+      return $scope.processorPinLookup[pin.gpio_port+pin.gpio_pin];
+    }
+    return {};
+  };
+  
   $scope.peripheralOptions = [{'name':'Per. A', 'value':'A'}, {'name':'Per. B', 'value':'B'}];
 
   $scope.timerTypeOptions = ['Timer', 'PWMTimer'];
-  $scope.timerChannelOptions = ['A', 'B']
+  $scope.timerChannelOptions =[{'name':'Ch. A', 'value':'A'}, {'name':'Ch. B', 'value':'B'}]
   $scope.timerNumberOptions = [0, 1, 2, 3];
   $scope.pwmTimerNumberOptions = [0, 1, 2, 3];
 
@@ -149,8 +47,7 @@ pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
   $scope.motateProcessorsView.query("search", "processors",
     {
       include_docs: true,
-      descending: true,
-      limit: 8
+      descending: true
     }
   ).success(
     function() {
@@ -158,16 +55,31 @@ pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
         var row = $scope.motateProcessorsView.rows[rowIdx];
         $scope.processors[row.key] = row.doc;
       }
+
       $scope.processorDoc = $scope.processors[$scope.motateProcessorsView.rows[0].key]
     }
   );
 
-  $scope.submitProcessor = function() {
-    // if (!$scope.processorDoc instanceof $scope.motateProcessorsView.docClass) {
-      var processorDoc = $scope.motateProcessorsView.newDoc($scope.processorDoc);
-    // }
+  $scope.submitProcessor = function(scope) {
+    var s = scope;
+    var processorDoc = $scope.motateProcessorsView.newDoc($scope.processorDoc);
 
-    processorDoc.save();
+    processorDoc.save().success(function(data) {
+      s.processorDoc._id = data._id;
+      s.processorDoc._rev = data._rev;
+      s.processorForm.$setPristine();
+    });
+  };
+  
+  $scope.processorPredicate = ['gpio_port', 'gpio_pin'];
+  $scope.processorSortColumn = 1;
+  $scope.processorReverse = false;
+    
+  $scope.handleProcessorReverse = function(column) {
+    if (column == $scope.processorSortColumn) {
+      $scope.processorReverse = !$scope.processorReverse;
+    }
+    $scope.processorSortColumn = column;
   };
 
 
@@ -176,8 +88,7 @@ pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
   $scope.motateBoardsView.query("search", "boards_by_processor",
     {
       include_docs: true,
-      descending: true,
-      limit: 8
+      descending: true
     }
   ).success(
     function() {
@@ -190,16 +101,181 @@ pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
     }
   );
 
-  $scope.submitBoard = function() {
-    // if (!$scope.boardDoc instanceof $scope.motateBoardsView.docClass) {
-      var boardDoc = $scope.motateBoardsView.newDoc($scope.boardDoc);
-    // }
+  $scope.submitBoard = function(scope) {
+    var s = scope;
+    var boardDoc = $scope.motateBoardsView.newDoc(s.boardDoc);
+    
+    boardDoc.save().success(function(data) {
+      s.boardDoc._id = data._id;
+      s.boardDoc._rev = data._rev;
+      s.boardForm.$setPristine();
+    });
+  };
 
-    boardDoc.save();
+  $scope.boardSortFn = function(subkey, flip) {
+    var flip_keep = flip || 0
+    var subkey_keep = subkey;
+    return function(o) {
+      var procPin = $scope.lookupPin(o);
+      return procPin[subkey_keep];
+    }
   };
   
-  
-  $scope.getProcessorPin = function(boardPin) {
+  $scope.boardPWMSortFn = function(subkey) {
+    var subkey_keep = subkey;
+    return function(o) {
+      var procPin = $scope.lookupPin(o);
+      if (!procPin.pwm) return null;
+      return procPin.pwm[subkey_keep];
+    }
+  };
+
+  $scope.boardSPISortFn = function(subkey) {
+    var subkey_keep = subkey;
+    return function(o) {
+      var procPin = $scope.lookupPin(o);
+      if (!procPin.spi) return null;
+      return procPin.spi[subkey_keep];
+    }
+  };
+
+  $scope.boardTWISortFn = function(subkey) {
+    var subkey_keep = subkey;
+    return function(o) {
+      var procPin = $scope.lookupPin(o);
+      if (!procPin.twi) return null;
+      return procPin.twi[subkey_keep];
+    }
+  };
+
+
+  $scope.boardPredicate = [$scope.boardSortFn('gpio_port'), $scope.boardSortFn('gpio_pin')];
+  $scope.boardSortColumn = 2;
+  $scope.boardReverse = false;
     
+  $scope.handleBoardReverse = function(column) {
+    if (column == $scope.boardSortColumn) {
+      $scope.boardReverse = !$scope.boardReverse;
+    }
+    $scope.boardSortColumn = column;
+  };
+
+  $scope.motatePinNameLookup = {}
+  $scope.motatePinNamesView.query("search", "pins",
+    {
+      include_docs: true,
+      descending: true
+    }
+  ).success(
+    function() {
+      $scope.motatePinNameLookup = $scope.motatePinNamesView.rows[0].doc.names;
+    }
+  );
+  
+  $scope.fixPinNum = function(pin) {
+    for (var i = 0; i < $scope.motatePinNameLookup.length; i++) {
+      var pinRules = $scope.motatePinNameLookup[i];
+      if (pin.motate_name == null) {
+        return false;
+      }
+      if (pinRules.motate_name.toLocaleLowerCase() == pin.motate_name.toLocaleLowerCase()) {
+        pin.motate_pin = Number(pinRules.motate_pin);
+      }
+    }
+    return false;
   }
+  
+  $scope.motatePinTypeaheadFilter = function(actual, expected) {
+    return true;
+  };
+});
+
+pinoutApp.controller('BoardPinCtrl', function ($scope, $debounce) {
+  $scope.processorPin = {}
+  var scope = $scope;
+  var parent = $scope.$parent;
+  var pin = $scope.pin;
+  
+  if (pin.motate_pin && !pin.motate_name) {
+    for (var i = 0; i < $scope.motatePinNameLookup.length; i++) {
+      var pinRules = $scope.motatePinNameLookup[i];
+      if (Number(pinRules.motate_pin) == Number(pin.motate_pin)) {
+        pin.motate_name = pinRules.motate_name;
+        break;
+      }
+    }
+  }
+  
+  parent.$watch('processorDoc', function(newValue, oldValue) {
+    var processor = parent.boardDoc.processor;
+    if (parent.processors[processor]) {
+      for (var rowIdx in parent.processors[processor].pins) {
+        var procPin = parent.processorDoc.pins[rowIdx];
+        if (procPin.gpio_port == pin.gpio_port && procPin.gpio_pin == pin.gpio_pin) {
+          scope.processorPin = procPin;
+        }
+      }
+    }
+  });
+});
+
+pinoutApp.filter('appropriatePins', function() {
+  return function(array, text, pin, processorPin) {
+    var arrayFiltered = [];
+    for (var i = 0; i < array.length; i++) {
+      var pinRules = array[i];
+      
+      if (pinRules.motate_name.toLocaleLowerCase().indexOf(text.toLocaleLowerCase()) == -1) {
+        continue;
+      }
+      if (pinRules.needs_spi) {
+        if (!processorPin.has_spi || pinRules.spi.type != processorPin.spi.type) {
+          continue;
+        }
+      }
+      if (pinRules.needs_twi) {
+        if (!processorPin.has_twi) {
+          continue;
+        }
+      }
+      if (pinRules.needs_pwm) {
+        if (!processorPin.has_pwm) {
+          continue;
+        }
+      }
+      
+      arrayFiltered.push(pinRules);
+    }
+    return arrayFiltered;
+  };
+});
+
+pinoutApp.filter('appropriatePinNum', function() {
+  return function(value, text, motatePinNameLookup) {
+    if (text == null) {
+      return true;
+    }
+    for (var i = 0; i < motatePinNameLookup.length; i++) {
+      var pinRules = motatePinNameLookup[i];
+      if (pinRules.motate_name.toLocaleLowerCase() == text.toLocaleLowerCase()) {
+        return value == pinRules.motate_pin;
+      }
+    }
+    return true;
+  };
+});
+
+pinoutApp.filter('pinForMotateName', function() {
+  return function(text, value, motatePinNameLookup) {
+    if (text != null || value == null) {
+      return text;
+    }
+    for (var i = 0; i < motatePinNameLookup.length; i++) {
+      var pinRules = motatePinNameLookup[i];
+      if (pinRules.motate_pin == value) {
+        return text == pinRules.motate_name;
+      }
+    }
+    return text;
+  };
 });
