@@ -43,8 +43,12 @@
 											MotateName
 											<span ng-class="{'grey-sort':(boardSortColumn!=1), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
 										</th>
-										<th class="align-left-cell" ng-click="boardPredicate = [boardSortFn('gpio_port'), boardSortFn('gpio_pin')]; handleBoardReverse(2)">
+										<th class="align-left-cell" ng-click="boardPredicate = [boardSortFn('pin')]; handleBoardReverse(6)">
 											Pin
+											<span ng-class="{'grey-sort':(boardSortColumn!=6), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+										</th>
+										<th class="align-left-cell" ng-click="boardPredicate = [boardSortFn('gpio_port'), boardSortFn('gpio_pin')]; handleBoardReverse(2)">
+											GPIO
 											<span ng-class="{'grey-sort':(boardSortColumn!=2), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
 										</th>
 										<th class="align-left-cell" ng-click="boardPredicate = [boardSortFn('has_pwm', 1), boardPWMSortFn('type'), boardPWMSortFn('number'), boardPWMSortFn('channel'), boardPWMSortFn('peripheral')]; handleBoardReverse(3)">
@@ -68,6 +72,7 @@
 											<i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
 										</td>
 								
+										<td class="align-left-cell">{{processorPin.pin}}</td>
 										<td class="align-left-cell">{{processorPin.gpio_port+processorPin.gpio_pin}}</td>
 								
 										<td class="align-left-cell">
@@ -164,10 +169,10 @@
 							</form>
 						</tab>
 						<tab heading="Output">
-<pre class="prettyprint linenums"><span ng-repeat="pin in processorDoc.pins | orderBy:['motate_pin']:false">		_MAKE_MOTATE_PIN({{pin.motate_pin}}, {{pin.pin}}, '{{pin.pin}}', {{pin.port}});	// {{pinNames[pin.motate_pin]}}<span ng-if="pin.spi.type=='cs'">
-			_MAKE_MOTATE_SPI_CS_PIN({{pin.motate_pin}}, {{pin.spiCSPeripheral}}, {{pin.spiCSPin}});</span><span ng-if="pin.spi.type=='other'">
-			_MAKE_MOTATE_SPI_OTHER_PIN({{pin.motate_pin}}, {{pin.spiOtherPeripheral}});</span><span ng-if="pin.pwmType">
-			_MAKE_MOTATE_PWM_PIN({{pin.motate_pin}}, Motate::{{pin.pwmType}}&lt;{{pin.pwmNumber}}&gt;, /*Channel:*/ {{pin.pwmChannel}}, /*Peripheral:*/ {{pin.pwmPeripheral}}, /*Inverted:*/ {{pin.pwmInverted}}); <span ng-if="pin.pwmInverted">// INVERTED!</span></span>
+<pre class="prettyprint linenums"><span ng-repeat="pin in boardDoc.pins | orderBy:'motate_pin':false" ng-controller="BoardPinCtrl">		_MAKE_MOTATE_PIN({{pin.motate_pin}}, {{processorPin.gpio_port}}, '{{processorPin.gpio_port}}', {{processorPin.gpio_pin}});	// {{pin.motate_name}}<span ng-if="processorPin.has_spi &amp;&amp; processorPin.spi.type=='cs'">
+			_MAKE_MOTATE_SPI_CS_PIN({{pin.motate_pin}}, {{processorPin.spi.peripheral}}, {{processorPin.spi.pin}});</span><span ng-if="processorPin.has_spi &amp;&amp; processorPin.spi.type=='other'">
+			_MAKE_MOTATE_SPI_OTHER_PIN({{pin.motate_pin}}, {{processorPin.spi.peripheral}});</span><span ng-if="processorPin.has_pwm">
+			_MAKE_MOTATE_PWM_PIN({{pin.motate_pin}}, Motate::{{processorPin.pwm.type}}&lt;{{processorPin.pwm.number}}&gt;, /*Channel:*/ {{processorPin.pwm.channel}}, /*Peripheral:*/ {{processorPin.pwm.peripheral}}, /*Inverted:*/ {{processorPin.pwm.inverted}}); <span ng-if="processorPin.pwm.inverted">// INVERTED!</span></span>
 
 </span></pre>
 						</tab>

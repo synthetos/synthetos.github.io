@@ -7,8 +7,9 @@ pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
   $scope.processors = {};
   $scope.boards = {};
   
+  $scope.server = cornercouch("https://giseburt.iriscouch.com", 'GET');
   // $scope.server = cornercouch("https://motate.iriscouch.com");
-  $scope.server = cornercouch("http://localhost:5984", "GET");
+  // $scope.server = cornercouch("http://localhost:5984", "GET");
   $scope.server.session();
   $scope.motateProcessorsView = $scope.server.getDB('motate');
   $scope.motateBoardsView = $scope.server.getDB('motate');
@@ -180,6 +181,9 @@ pinoutApp.controller('PinoutCtrl', function ($scope, cornercouch) {
       }
       if (pinRules.motate_name.toLocaleLowerCase() == pin.motate_name.toLocaleLowerCase()) {
         pin.motate_pin = Number(pinRules.motate_pin);
+        pin.needs_pwm = pinRules.needs_pwm;
+        pin.needs_spi = pinRules.needs_spi;
+        pin.needs_twi = pinRules.needs_twi;
       }
     }
     return false;
@@ -201,6 +205,9 @@ pinoutApp.controller('BoardPinCtrl', function ($scope, $debounce) {
       var pinRules = $scope.motatePinNameLookup[i];
       if (Number(pinRules.motate_pin) == Number(pin.motate_pin)) {
         pin.motate_name = pinRules.motate_name;
+        pin.needs_pwm = pinRules.needs_pwm;
+        pin.needs_spi = pinRules.needs_spi;
+        pin.needs_twi = pinRules.needs_twi;
         break;
       }
     }
