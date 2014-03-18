@@ -22,6 +22,18 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   scope.motatePinNamesView = scope.server.getDB('motate');
   
   scope.processorDoc = {};
+  scope.processorDocOriginal = {};
+  
+  scope.doEditProcessor = function($scope) {
+    $scope.isEditingProcessor = true;
+    scope.processorDocOriginal = angular.copy(scope.processorDoc);
+  };
+  
+  scope.doCancelEditProcessor = function($scope) {
+    $scope.isEditingProcessor = false;
+    angular.copy(scope.processorDocOriginal, scope.processorDoc);
+  };
+
   scope.processorPinLookup = {};
   scope.$watch('processorDoc', function(newValue, oldValue) {
     scope.processorPinLookup = {};
@@ -58,6 +70,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
       // scope.processorDoc._id = data.id;
       scope.processorDoc._rev = data.rev;
       $scope.processorForm.$setPristine();
+      angular.copy(scope.processorDoc, scope.processorDocOriginal);
     });
   };
   
@@ -74,6 +87,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
 
 
   scope.boardDoc = {};
+  scope.boardDocOriginal = {};
 
   scope.motateBoardsView.query("search", "boards_by_processor",
     {
@@ -91,13 +105,49 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
     }
   );
 
+  scope.doCopyBoard = function($scope) {
+    scope.isEditingBoard = true;
+    scope.boardDocOriginal = angular.copy(scope.boardDoc);
+    delete scope.boardDoc._rev;
+    scope.boardDoc._id += " (Copy)";
+  };
+
+  scope.doNewBoard = function($scope) {
+    scope.isEditingBoard = true;
+    scope.boardDocOriginal = scope.boardDoc;
+    scope.boardDoc = {_id:"", processor:$scope.processor._id,type:"board", pins:[]};
+    for (var pinIdx in $scope.processor.pins) {
+      var pin = $scope.processor.pins[pinIdx];
+      var newPin = {
+        pin:pin.pin,
+        gpio_pin:pin.gpio_pin,
+        gpio_port:pin.gpio_port
+      };
+      scope.boardDoc.pins.push(newPin);
+    }
+  };
+
+  scope.doEditBoard = function($scope) {
+    scope.isEditingBoard = true;
+    scope.boardDocOriginal = angular.copy(scope.boardDoc);
+  };
+  
+  scope.doCancelEditBoard = function($scope) {
+    scope.isEditingBoard = false;
+    angular.copy(scope.boardDocOriginal, scope.boardDoc);
+  };
+
   scope.submitBoard = function($scope) {
     var boardDoc = scope.motateBoardsView.newDoc(scope.boardDoc);
     
     boardDoc.save().success(function(data) {
       // scope.boardDoc._id = data.id;
+      if (!scope.boardDoc._rev) {
+        scope.boards[scope.boardDoc._id] = scope.boardDoc;
+      }
       scope.boardDoc._rev = data.rev;
       $scope.boardForm.$setPristine();
+      angular.copy(scope.boardDoc, scope.boardDocOriginal);
     });
   };
 
@@ -285,7 +335,7 @@ pinoutApp.controller('BoardPinCtrl', function ($scope, $debounce) {
     var processor = parent.boardDoc.processor;
     if (parent.processors[processor]) {
       for (var rowIdx in parent.processors[processor].pins) {
-        var procPin = parent.processorDoc.pins[rowIdx];
+        var procPin = parent.processors[processor].pins[rowIdx];
         if (procPin.gpio_port == pin.gpio_port && procPin.gpio_pin == pin.gpio_pin) {
           scope.processorPin = procPin;
         }

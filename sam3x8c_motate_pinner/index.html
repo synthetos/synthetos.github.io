@@ -30,9 +30,26 @@
 				<section id="main-content">
 					<tabset>
 						<tab heading="Boards">
-							<form name="boardForm" ng-submit="submitBoard(this)">
-								<select ng-model="$parent.boardDoc" ng-options="board.doc as board.doc._id group by board.doc.processor for board in motateBoardsView.rows"></select>
-								<button class="btn btn-primary btn-xs pull-right" ng-disabled="!boardForm.$dirty">Save</button>
+							<form name="boardForm">
+								<div ng-hide="boardDoc._rev">
+									<input ng-model="boardDoc._id">
+								</div>
+								<select ng-model="$parent.boardDoc" ng-hide="!$parent.boardDoc._rev" ng-options="board.doc as board.doc._id group by board.doc.processor for board in motateBoardsView.rows"></select>
+								<span ng-hide="isEditingBoard">
+									<span class="dropdown">
+										<a class="btn btn-default btn-xs dropdown-toggle"><div class="glyphicon glyphicon-cog"></div></a>
+										<ul class="dropdown-menu">
+											<li ng-repeat="(processor_id, processor) in processors | orderBy:_id"><a ng-click="doNewBoard(this)">New “{{processor._id}}” board...</a></li>
+											<li><a ng-click="doCopyBoard(this)">Copy “{{$parent.boardDoc._id}}”...</a></li>
+											<!--<li><a>Delete</a></li>-->
+										</ul>
+									</span>
+								</span>
+								<div class="btn btn-default btn-xs pull-right" ng-show="!isEditingBoard" ng-click="doEditBoard(this)">Edit</div>
+								<div  ng-show="isEditingBoard" class="pull-right">
+									<div class="btn btn-default btn-xs" ng-click="doCancelEditBoard(this)">Cancel</div>
+									<div class="btn btn-primary btn-xs" ng-disabled="!boardForm.$dirty" ng-click="submitBoard(this)">Save</div>
+								</div>
 								<table id="boardTable" class="breathe">
 									<tr>
 										<th class="align-left-cell" ng-click="boardPredicate = ['motate_pin']; handleBoardReverse(0)">
@@ -65,10 +82,10 @@
 										</th>
 									</tr>
 									<tr ng-repeat="pin in boardDoc.pins | orderBy:boardPredicate:boardReverse" ng-controller="BoardPinCtrl">
-										<td class="align-left-cell"><input type="number" ng-model="pin.motate_pin" min="0" max="200"><a class="fix-button btn btn-warning btn-xs" ng-hide="pin.motate_pin|appropriatePinNum:pin.motate_name:motatePinNameLookup" ng-click="fixPinNum(pin)"><span class="glyphicon glyphicon-arrow-left"></span></button></td>
+										<td class="align-left-cell"><input type="number" ng-model="pin.motate_pin" ng-disabled="!isEditingBoard" min="0" max="200"><a class="fix-button btn btn-warning btn-xs" ng-hide="pin.motate_pin|appropriatePinNum:pin.motate_name:motatePinNameLookup" ng-click="fixPinNum(pin)"><span class="glyphicon glyphicon-arrow-left"></span></button></td>
 								
 										<td class="align-left-cell">
-											<input type="text" ng-model="pin.motate_name" placeholder="motate pin name" typeahead="rule.motate_name as rule.motate_name for rule in motatePinNameLookup | appropriatePins:$viewValue:pin:processorPin" typeahead-loading="loadingLocations" class="form-control">
+											<input type="text" ng-model="pin.motate_name" ng-disabled="!isEditingBoard" placeholder="motate pin name" typeahead="rule.motate_name as rule.motate_name for rule in motatePinNameLookup | appropriatePins:$viewValue:pin:processorPin" typeahead-loading="loadingLocations" class="form-control">
 											<i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
 										</td>
 								
@@ -76,7 +93,7 @@
 										<td class="align-left-cell">{{processorPin.gpio_port+processorPin.gpio_pin}}</td>
 								
 										<td class="align-left-cell">
-											<input type="checkbox" ng-model="pin.needs_pwm" ng-disabled="!processorPin.has_pwm">
+											<input type="checkbox" ng-model="pin.needs_pwm" ng-disabled="!isEditingBoard+!processorPin.has_pwm">
 											<span ng-if="processorPin.has_pwm">
 												{{processorPin.pwm.type}}&lt;{{processorPin.pwm.number}}&gt; (Ch: {{processorPin.pwm.channel}}, Per: {{processorPin.pwm.peripheral}})
 												<span ng-if="processorPin.pwm.inverted">&#x293E;</span>
@@ -84,7 +101,7 @@
 										</td>
 								
 										<td class="align-left-cell">
-											<input type="checkbox" ng-model="pin.needs_spi" ng-disabled="!processorPin.has_spi">
+											<input type="checkbox" ng-model="pin.needs_spi" ng-disabled="!isEditingBoard+!processorPin.has_spi">
 											<span ng-if="processorPin.has_spi">
 												<span ng-if="processorPin.spi.type=='cs'">CS</span><span ng-if="processorPin.spi.type=='other'">MISO/MOSI/SCK</span>{{processorPin.spi.number}}
 												(Per: {{processorPin.spi.peripheral}})
@@ -92,7 +109,7 @@
 										</td>
 								
 										<td class="align-left-cell">
-											<input type="checkbox" ng-model="pin.needs_twi" ng-disabled="!processorPin.has_twi">
+											<input type="checkbox" ng-model="pin.needs_twi" ng-disabled="!isEditingBoard+!processorPin.has_twi">
 											<span ng-if="processorPin.has_twi">
 												{{processorPin.twi.type+processorPin.twi.number}}
 												<!-- (Per: {{processorPin.twi.peripheral}}) -->
@@ -104,9 +121,13 @@
 							</form>
 						</tab>
 						<tab heading="Processors">
-							<form name="processorForm" ng-submit="submitProcessor(this)">
-								<select ng-model="$parent.processorDoc" ng-options="processor.doc as processor.doc._id for processor in motateProcessorsView.rows"></select>
-								<button class="btn btn-primary btn-xs pull-right" ng-disabled="!processorForm.$dirty">Save</button>
+							<form name="processorForm">
+								<select ng-model="$parent.processorDoc" ng-options="processor.doc as processor.doc._id for processor in motateProcessorsView.rows | orderBy:_id"></select>
+								<div class="btn btn-default btn-xs pull-right" ng-show="!isEditingProcessor" ng-click="doEditProcessor(this)">Edit</div>
+								<div ng-show="isEditingProcessor" class="pull-right">
+									<div class="btn btn-default btn-xs" ng-click="doCancelEditProcessor(this)">Cancel</div>
+									<div class="btn btn-primary btn-xs" ng-disabled="!processorForm.$dirty" ng-click="submitProcessor(this)">Save</div>
+								</div>
 								<table id="processorTable" class="breathe">
 									<tr>
 										<th class="align-left-cell" ng-click="processorPredicate = ['pin']; handleProcessorReverse(0)">
@@ -131,36 +152,41 @@
 										</th>
 									</tr>
 									<tr ng-repeat="pin in processorDoc.pins | orderBy:processorPredicate:processorReverse">
-										<td class="align-left-cell"><input type="number" ng-model="pin.pin" min="0" max="200"></td>
+										<td class="align-left-cell"><input type="number" ng-model="pin.pin" ng-disabled="!isEditingProcessor" min="0" max="200"></td>
 										
 										<td class="align-left-cell">{{pin.gpio_port + pin.gpio_pin}}</td>
 								
 										<td class="align-left-cell">
-											<input type="checkbox" ng-model="pin.has_pwm">
+											<input type="checkbox" ng-model="pin.has_pwm" ng-disabled="!isEditingProcessor">
 											<span ng-if="pin.has_pwm">
-												<select ng-model="pin.pwm.type" ng-options="type for type in timerTypeOptions"></select>
-												<span ng-if="pin.pwm.type=='Timer'"><select ng-model="pin.pwm.number" ng-options="type for type in timerNumberOptions"></select><select ng-model="pin.pwm.channel" ng-options="type.value as type.name for type in timerChannelOptions"></select></span>
-												<span ng-if="pin.pwm.type=='PWMTimer'"><select ng-model="pin.pwm.number" ng-options="type for type in pwmTimerNumberOptions"></select></span>
-												<select ng-model="pin.pwm.peripheral" ng-options="type.value as type.name for type in peripheralOptions"></select>
-												&nbsp;<input type="checkbox" ng-model="pin.pwm.inverted" ng-value="true">&#x293E;
+												<select ng-model="pin.pwm.type" ng-disabled="!isEditingProcessor" ng-options="type for type in timerTypeOptions"></select>
+												<span ng-if="pin.pwm.type=='Timer'">
+													<select ng-model="pin.pwm.number" ng-disabled="!isEditingProcessor" ng-options="type for type in timerNumberOptions"></select>
+													<select ng-model="pin.pwm.channel" ng-disabled="!isEditingProcessor" ng-options="type.value as type.name for type in timerChannelOptions"></select>
+												</span>
+												<span ng-if="pin.pwm.type=='PWMTimer'">
+													<select ng-model="pin.pwm.number" ng-disabled="!isEditingProcessor" ng-options="type for type in pwmTimerNumberOptions"></select>
+												</span>
+												<select ng-model="pin.pwm.peripheral" ng-disabled="!isEditingProcessor" ng-options="type.value as type.name for type in peripheralOptions"></select>
+												&nbsp;<input type="checkbox" ng-model="pin.pwm.inverted" ng-disabled="!isEditingProcessor" ng-value="true">&#x293E;
 												<!-- {{pin.pwm.type}}&lt;{{pin.pwm.number}}&gt;::channel = "{{pin.pwm.channel}}" -->
 											</span>
 										</td>
 								
 										<td class="align-left-cell">
-											<input type="checkbox" ng-model="pin.has_spi">
+											<input type="checkbox" ng-model="pin.has_spi" ng-disabled="!isEditingProcessor">
 											<span ng-if="pin.has_spi">
-												<select ng-model="pin.spi.type" ng-options="type.value as type.name for type in spiTypeOptions"></select>
-												<span ng-if="pin.spi.type=='cs'"><select ng-model="pin.spi.pin" ng-options="type for type in spiPinOptions"></select></span>
-												<select ng-model="$parent.pin.spi.peripheral" ng-options="type.value as type.name for type in peripheralOptions"></select>
+												<select ng-model="pin.spi.type" ng-disabled="!isEditingProcessor" ng-options="type.value as type.name for type in spiTypeOptions"></select>
+												<span ng-if="pin.spi.type=='cs'"><select ng-model="pin.spi.pin" ng-disabled="!isEditingProcessor" ng-options="type for type in spiPinOptions"></select></span>
+												<select ng-model="$parent.pin.spi.peripheral" ng-disabled="!isEditingProcessor" ng-options="type.value as type.name for type in peripheralOptions"></select>
 											</span>
 										</td>
 								
 										<td class="align-left-cell">
-											<input type="checkbox" ng-model="pin.has_twi">
+											<input type="checkbox" ng-model="pin.has_twi" ng-disabled="!isEditingProcessor">
 											<span ng-if="pin.has_twi">
-												<select ng-model="pin.twi.type" ng-options="type.value as type.name for type in twiTypeOptions"></select>
-												<select ng-model="pin.twi.number" ng-options="type for type in twiNumberOptions"></select>
+												<select ng-model="pin.twi.type" ng-disabled="!isEditingProcessor" ng-options="type.value as type.name for type in twiTypeOptions"></select>
+												<select ng-model="pin.twi.number" ng-disabled="!isEditingProcessor" ng-options="type for type in twiNumberOptions"></select>
 											</span>
 										</td>
 								
