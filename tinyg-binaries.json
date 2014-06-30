@@ -6,8 +6,8 @@
       "branch" : "master"
     },
     {
-      "name" : "tinyg-edge-435.06",
-      "version" : "435.06",
+      "name" : "tinyg-edge-435.10",
+      "version" : "435.10",
       "branch" : "edge"
     }
   ]
