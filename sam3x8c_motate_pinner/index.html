@@ -58,11 +58,11 @@
 									<tr>
 										<th class="align-left-cell" ng-click="boardPredicate = ['motate_pin']; handleBoardReverse(0)">
 											Motate
-											<span ng-class="{'grey-sort':(boardSortColumn!=0), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+											<!--<span ng-class="{'grey-sort':(boardSortColumn!=0), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>-->
 										</th>
 										<th class="align-left-cell" ng-click="boardPredicate = ['motate_name']; handleBoardReverse(1)">
 											MotateName
-											<span ng-class="{'grey-sort':(boardSortColumn!=1), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+											<!--<span ng-class="{'grey-sort':(boardSortColumn!=1), 'btn':1, 'btn-xs':1}"><span ng-if="!boardReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="boardReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>-->
 										</th>
 										<th class="align-left-cell" ng-click="boardPredicate = [boardSortFn('pin')]; handleBoardReverse(6)">
 											Pin
@@ -141,14 +141,15 @@
 								<select ng-model="$parent.processorDoc" ng-options="processor.doc as processor.doc._id for processor in motateProcessorsView.rows | orderBy:_id"></select>
 								<div class="btn btn-default btn-xs pull-right" ng-show="!isEditingProcessor" ng-click="doEditProcessor(this)">Edit</div>
 								<div ng-show="isEditingProcessor" class="pull-right">
-									<div class="btn btn-default btn-xs" ng-click="doCancelEditProcessor(this)">Cancel</div>
+									<div class="btn btn-default btn-xs" ng-hide="processorForm.$dirty" ng-click="doCancelEditProcessor(this)">Done</div>
+									<div class="btn btn-default btn-xs" ng-hide="!processorForm.$dirty" ng-click="doCancelEditProcessor(this)">Cancel</div>
 									<div class="btn btn-primary btn-xs" ng-disabled="!processorForm.$dirty" ng-click="submitProcessor(this)">Save</div>
 								</div>
 								<table id="processorTable" class="breathe">
 									<tr>
 										<th class="align-left-cell" ng-click="processorPredicate = ['pin']; handleProcessorReverse(0)">
 											Pin
-											<span ng-class="{'grey-sort':(processorSortColumn!=0), 'btn':1, 'btn-xs':1}"><span ng-if="!processorReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="processorReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>
+											<!--<span ng-class="{'grey-sort':(processorSortColumn!=0), 'btn':1, 'btn-xs':1}"><span ng-if="!processorReverse" class="glyphicon glyphicon-sort-by-attributes"></span><span ng-if="processorReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span></span>-->
 										</th>
 										<th class="align-left-cell" ng-click="processorPredicate = ['gpio_port','gpio_pin']; handleProcessorReverse(1)">
 											GPIO
