@@ -58,10 +58,12 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   scope.pwmTimerNumberOptions = [0, 1, 2, 3];
 
   scope.spiPinOptions = [0, 1, 2, 3];
-  scope.spiTypeOptions = [{'name':'CS', 'value':'cs'}, {'name':'non-CS', 'value':'other'}];
+  scope.spiTypeOptions = [{'name':'CS', 'value':'cs'}, {'name':'MISO', 'value':'miso'}, {'name':'MOSI', 'value':'mosi'}, {'name':'SCK', 'value':'sck'}];
 
   scope.twiNumberOptions = [0, 1];
-  scope.twiTypeOptions = [{'name':'SDA', 'value':'SDA'}, {'name':'SCK', 'value':'SCK'}];
+  scope.twiTypeOptions = [{'name':'SDA', 'value':'sda'}, {'name':'SCK', 'value':'sck'}];
+
+  scope.uartTypeOptions = [{'name':'TX', 'value':'tx'}, {'name':'RX', 'value':'rx'}];
   
   scope.submitProcessor = function($scope) {
     var processorDoc = scope.motateProcessorsView.newDoc(scope.processorDoc);
@@ -89,25 +91,10 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   scope.boardDoc = {};
   scope.boardDocOriginal = {};
 
-  scope.motateBoardsView.query("search", "boards_by_processor",
-    {
-      include_docs: true,
-      descending: true
-    }
-  ).success(
-    function() {
-      for (var rowIdx in scope.motateBoardsView.rows) {
-        var row = scope.motateBoardsView.rows[rowIdx];
-        scope.boards[row.key] = row.doc;
-      }
-      
-      scope.boardDoc = scope.boards[scope.motateBoardsView.rows[0].key];
-    }
-  );
-
   scope.doCopyBoard = function($scope) {
     scope.isEditingBoard = true;
-    scope.boardDocOriginal = angular.copy(scope.boardDoc);
+    scope.boardDocOriginal = scope.boardDoc;
+    scope.boardDoc = angular.copy(scope.boardDoc);
     delete scope.boardDoc._rev;
     scope.boardDoc._id += " (Copy)";
   };
@@ -134,20 +121,25 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   
   scope.doCancelEditBoard = function($scope) {
     scope.isEditingBoard = false;
-    angular.copy(scope.boardDocOriginal, scope.boardDoc);
+    if (scope.boardDoc._rev) {
+      angular.copy(scope.boardDocOriginal, scope.boardDoc);
+    } else {
+      scope.boardDoc = scope.boardDocOriginal;
+    }
   };
 
   scope.submitBoard = function($scope) {
     var boardDoc = scope.motateBoardsView.newDoc(scope.boardDoc);
     
     boardDoc.save().success(function(data) {
-      // scope.boardDoc._id = data.id;
-      if (!scope.boardDoc._rev) {
+      scope.boardDoc._id = data.id;
+      if (scope.boardDoc._rev) {
+        angular.copy(scope.boardDoc, scope.boardDocOriginal);
+      } else {
         scope.boards[scope.boardDoc._id] = scope.boardDoc;
       }
       scope.boardDoc._rev = data.rev;
       $scope.boardForm.$setPristine();
-      angular.copy(scope.boardDoc, scope.boardDocOriginal);
     });
   };
 
@@ -187,6 +179,14 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
     }
   };
 
+  scope.boardUARTSortFn = function(subkey) {
+    var subkey_keep = subkey;
+    return function(o) {
+      var procPin = scope.lookupPin(o);
+      if (!procPin.uart) return null;
+      return procPin.uart[subkey_keep];
+    }
+  };
 
   scope.boardPredicate = [scope.boardSortFn('gpio_port'), scope.boardSortFn('gpio_pin')];
   scope.boardSortColumn = 2;
@@ -212,6 +212,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
         pin.needs_pwm = pinRules.needs_pwm;
         pin.needs_spi = pinRules.needs_spi;
         pin.needs_twi = pinRules.needs_twi;
+        pin.needs_uart = pinRules.needs_uart;
       }
     }
     return false;
@@ -273,10 +274,10 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
       function() {
         for (var rowIdx in scope.motateBoardsView.rows) {
           var row = scope.motateBoardsView.rows[rowIdx];
-          scope.boards[row.key] = row.doc;
+          scope.boards[row.id] = row.doc;
         }
     
-        scope.boardDoc = scope.boards[scope.motateBoardsView.rows[0].key];
+        scope.boardDoc = scope.boards[scope.motateBoardsView.rows[0].id];
       }
     );
 
@@ -359,12 +360,17 @@ pinoutApp.filter('appropriatePins', function() {
         }
       }
       if (pinRules.needs_twi) {
-        if (!processorPin.has_twi) {
+        if (!processorPin.has_twi || pinRules.twi.type != processorPin.twi.type) {
           continue;
         }
       }
       if (pinRules.needs_pwm) {
         if (!processorPin.has_pwm) {
+          continue;
+        }
+      }
+      if (pinRules.needs_uart) {
+        if (!processorPin.has_uart || pinRules.uart.type != processorPin.uart.type) {
           continue;
         }
       }
