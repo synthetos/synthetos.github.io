@@ -50,12 +50,14 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
     return {};
   };
   
-  scope.peripheralOptions = [{'name':'Per. A', 'value':'A'}, {'name':'Per. B', 'value':'B'}];
+  // scope.pinPortOptions = [{'name':'A', 'value':'A'}, {'name':'B', 'value':'B'}, {'name':'C', 'value':'C'}, {'name':'D', 'value':'D'}];
+
+  scope.peripheralOptions = [{'name':'PerA', 'value':'A'}, {'name':'PerB', 'value':'B'}];
 
   scope.timerTypeOptions = ['Timer', 'PWMTimer'];
-  scope.timerChannelOptions =[{'name':'Ch. A', 'value':'A'}, {'name':'Ch. B', 'value':'B'}]
-  scope.timerNumberOptions = [0, 1, 2, 3];
-  scope.pwmTimerNumberOptions = [0, 1, 2, 3];
+  scope.timerChannelOptions =[{'name':'ChA', 'value':'A'}, {'name':'ChB', 'value':'B'}]
+  scope.timerNumberOptions = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+  scope.pwmTimerNumberOptions = [0, 1, 2, 3, 4, 5, 6, 7];
 
   scope.spiPinOptions = [0, 1, 2, 3];
   scope.spiTypeOptions = [{'name':'CS', 'value':'cs'}, {'name':'MISO', 'value':'miso'}, {'name':'MOSI', 'value':'mosi'}, {'name':'SCK', 'value':'sck'}];
@@ -63,7 +65,9 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   scope.twiNumberOptions = [0, 1];
   scope.twiTypeOptions = [{'name':'SDA', 'value':'sda'}, {'name':'SCK', 'value':'sck'}];
 
-  scope.uartTypeOptions = [{'name':'TX', 'value':'tx'}, {'name':'RX', 'value':'rx'}];
+  scope.uartNumberOptions = [0, 1, 2, 3];
+  scope.uartClassOptions = ['UART', 'USART'];
+  scope.uartTypeOptions = [{'name':'TX', 'value':'tx'}, {'name':'RX', 'value':'rx'}, {'name':'RTS', 'value':'rts'}, {'name':'CTS', 'value':'cts'}, {'name':'SCK', 'value':'sck'}];
   
   scope.submitProcessor = function($scope) {
     var processorDoc = scope.motateProcessorsView.newDoc(scope.processorDoc);
@@ -117,6 +121,25 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   scope.doEditBoard = function($scope) {
     scope.isEditingBoard = true;
     scope.boardDocOriginal = angular.copy(scope.boardDoc);
+    
+    for (var pinIdx in scope.processorDoc.pins) {
+        var processorPin = scope.processorDoc.pins[pinIdx];
+        var found = false;
+        for (var pinIdx2 in scope.boardDoc.pins) {
+            var pin = scope.boardDoc.pins[pinIdx2];
+            if (pin.gpio_pin == processorPin.gpio_pin && pin.gpio_port == processorPin.gpio_port) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            var newPin = {
+              gpio_pin:processorPin.gpio_pin,
+              gpio_port:processorPin.gpio_port
+            };
+            scope.boardDoc.pins.push(newPin);
+        }
+      }
   };
   
   scope.doCancelEditBoard = function($scope) {
@@ -217,6 +240,10 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
     }
     return false;
   };
+  
+  // scope.addProcessorPin = function () {
+  //   scope.processorDoc.pins += {};
+  // };
   
   scope.logOut = function() {
     scope.server.login(null, null);

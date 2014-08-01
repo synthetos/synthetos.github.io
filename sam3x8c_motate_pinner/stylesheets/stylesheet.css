@@ -409,7 +409,7 @@ footer a:hover {
 /* Tablet Portrait size to standard 960 (devices and browsers) */
 @media only screen and (min-width: 768px) and (max-width: 959px) {
   .inner {
-    width: 740px;
+    width: 959px;
   }
   header h1, header h2 {
     width: 340px;
