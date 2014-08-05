@@ -5,30 +5,30 @@ var pinoutApp = angular.module('pinoutApp', ['CornerCouch', 'ui.bootstrap', 'ng'
 
 pinoutApp.constant('_LOGIN_REQUIRED_', '_LOGIN_REQUIRED_');
 
-pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$modal', '$q', '_LOGIN_REQUIRED_', 
+pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$modal', '$q', '_LOGIN_REQUIRED_',
     function ($rootScope, $scope, cornercouch, $modal, $q, _LOGIN_REQUIRED_) {
   // Make a (rarely used) alias for this $scope
   var scope = $scope;
 
   scope.processors = {};
   scope.boards = {};
-  
+
   scope.server = cornercouch("https://giseburt.iriscouch.com", 'GET');
   // $scope.server = cornercouch("https://motate.iriscouch.com");
   // $scope.server = cornercouch("http://localhost:5984", "GET");
-  
+
   scope.motateProcessorsView = scope.server.getDB('motate');
   scope.motateBoardsView = scope.server.getDB('motate');
   scope.motatePinNamesView = scope.server.getDB('motate');
-  
+
   scope.processorDoc = {};
   scope.processorDocOriginal = {};
-  
+
   scope.doEditProcessor = function($scope) {
     $scope.isEditingProcessor = true;
     scope.processorDocOriginal = angular.copy(scope.processorDoc);
   };
-  
+
   scope.doCancelEditProcessor = function($scope) {
     $scope.isEditingProcessor = false;
     angular.copy(scope.processorDocOriginal, scope.processorDoc);
@@ -42,14 +42,14 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
       scope.processorPinLookup[pin.gpio_port+pin.gpio_pin] = pin;
     }
   });
-  
+
   scope.lookupPin = function(pin) {
     if (pin) {
       return scope.processorPinLookup[pin.gpio_port+pin.gpio_pin];
     }
     return {};
   };
-  
+
   // scope.pinPortOptions = [{'name':'A', 'value':'A'}, {'name':'B', 'value':'B'}, {'name':'C', 'value':'C'}, {'name':'D', 'value':'D'}];
 
   scope.peripheralOptions = [{'name':'PerA', 'value':'A'}, {'name':'PerB', 'value':'B'}];
@@ -68,7 +68,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   scope.uartNumberOptions = [0, 1, 2, 3];
   scope.uartClassOptions = ['UART', 'USART'];
   scope.uartTypeOptions = [{'name':'TX', 'value':'tx'}, {'name':'RX', 'value':'rx'}, {'name':'RTS', 'value':'rts'}, {'name':'CTS', 'value':'cts'}, {'name':'SCK', 'value':'sck'}];
-  
+
   scope.submitProcessor = function($scope) {
     var processorDoc = scope.motateProcessorsView.newDoc(scope.processorDoc);
 
@@ -79,11 +79,11 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
       angular.copy(scope.processorDoc, scope.processorDocOriginal);
     });
   };
-  
+
   scope.processorPredicate = ['gpio_port', 'gpio_pin'];
   scope.processorSortColumn = 1;
   scope.processorReverse = false;
-    
+
   scope.handleProcessorReverse = function(column) {
     if (column == scope.processorSortColumn) {
       scope.processorReverse = !scope.processorReverse;
@@ -121,7 +121,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   scope.doEditBoard = function($scope) {
     scope.isEditingBoard = true;
     scope.boardDocOriginal = angular.copy(scope.boardDoc);
-    
+
     for (var pinIdx in scope.processorDoc.pins) {
         var processorPin = scope.processorDoc.pins[pinIdx];
         var found = false;
@@ -141,7 +141,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
         }
       }
   };
-  
+
   scope.doCancelEditBoard = function($scope) {
     scope.isEditingBoard = false;
     if (scope.boardDoc._rev) {
@@ -153,7 +153,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
 
   scope.submitBoard = function($scope) {
     var boardDoc = scope.motateBoardsView.newDoc(scope.boardDoc);
-    
+
     boardDoc.save().success(function(data) {
       scope.boardDoc._id = data.id;
       if (scope.boardDoc._rev) {
@@ -171,15 +171,18 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
     var subkey_keep = subkey;
     return function(o) {
       var procPin = scope.lookupPin(o);
-      return procPin && procPin[subkey_keep];
+      if (!procPin)
+        return 0xFFFFFFFF;
+      return flip_keep ? !procPin[subkey_keep] : procPin[subkey_keep];
     }
   };
-  
+
   scope.boardPWMSortFn = function(subkey) {
     var subkey_keep = subkey;
     return function(o) {
       var procPin = scope.lookupPin(o);
-      if (!procPin.pwm) return null;
+      if (!procPin.has_pwm || !procPin.pwm)
+        return 0xFFFFFFFF;
       return procPin.pwm[subkey_keep];
     }
   };
@@ -188,7 +191,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
     var subkey_keep = subkey;
     return function(o) {
       var procPin = scope.lookupPin(o);
-      if (!procPin.spi) return null;
+      if (!procPin.spi) return 0xFFFFFFFF;
       return procPin.spi[subkey_keep];
     }
   };
@@ -197,7 +200,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
     var subkey_keep = subkey;
     return function(o) {
       var procPin = scope.lookupPin(o);
-      if (!procPin.twi) return null;
+      if (!procPin.twi) return 0xFFFFFFFF;
       return procPin.twi[subkey_keep];
     }
   };
@@ -206,7 +209,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
     var subkey_keep = subkey;
     return function(o) {
       var procPin = scope.lookupPin(o);
-      if (!procPin.uart) return null;
+      if (!procPin.uart) return 0xFFFFFFFF;
       return procPin.uart[subkey_keep];
     }
   };
@@ -214,7 +217,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   scope.boardPredicate = [scope.boardSortFn('gpio_port'), scope.boardSortFn('gpio_pin')];
   scope.boardSortColumn = 2;
   scope.boardReverse = false;
-    
+
   scope.handleBoardReverse = function(column) {
     if (column == scope.boardSortColumn) {
       scope.boardReverse = !scope.boardReverse;
@@ -223,7 +226,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   };
 
   scope.motatePinNameLookup = {};
-  
+
   scope.fixPinNum = function(pin) {
     for (var i = 0; i < scope.motatePinNameLookup.length; i++) {
       var pinRules = scope.motatePinNameLookup[i];
@@ -240,11 +243,11 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
     }
     return false;
   };
-  
+
   // scope.addProcessorPin = function () {
   //   scope.processorDoc.pins += {};
   // };
-  
+
   scope.logOut = function() {
     scope.server.login(null, null);
     // $rootScope.$broadcast(_LOGIN_REQUIRED_);
@@ -253,9 +256,9 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   scope.$on(_LOGIN_REQUIRED_, function() {
     if ($rootScope.loggingIn)
       return;
-    
+
     $rootScope.loggingIn = true;
-    
+
     scope.modalInstance = $modal.open({
       templateUrl: 'templates/login.html',
       controller: 'LoginCtrl',
@@ -263,7 +266,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
         server: function () { return scope.server; }
       }
     });
-    
+
     scope.modalInstance.result.then(function () {
       $rootScope.loggingIn = false;
       console.log('SUCCESS at: ' + new Date());
@@ -271,10 +274,10 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
       console.log('Modal dismissed at: ' + new Date());
     });
   });
-  
-  
+
+
   // Loading functions
-  
+
   $rootScope.loadData = function(why) {
     scope.motateProcessorsView.query("search", "processors",
         {
@@ -303,7 +306,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
           var row = scope.motateBoardsView.rows[rowIdx];
           scope.boards[row.id] = row.doc;
         }
-    
+
         scope.boardDoc = scope.boards[scope.motateBoardsView.rows[0].id];
       }
     );
@@ -319,7 +322,7 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
       }
     );
   };
-  
+
   $rootScope.checkLogin = function() {
     if (scope.server.userCtx.name == null) {
       $rootScope.$broadcast(_LOGIN_REQUIRED_);
@@ -332,12 +335,12 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
     $rootScope.loggedIn = false;
     $rootScope.$broadcast(_LOGIN_REQUIRED_);
   };
-  
+
   $rootScope.deferredLoad = $q.defer();
   $rootScope.deferredLoad.promise.then($rootScope.loadData);
 
   scope.server.session().then($rootScope.checkLogin, $rootScope.loginFailed);
-  
+
 }]); // PinoutCtrl
 
 pinoutApp.controller('BoardPinCtrl', function ($scope, $debounce) {
@@ -345,7 +348,7 @@ pinoutApp.controller('BoardPinCtrl', function ($scope, $debounce) {
   var scope = $scope;
   var parent = $scope.$parent;
   var pin = $scope.pin;
-  
+
   if (pin.motate_pin && !pin.motate_name) {
     for (var i = 0; i < $scope.motatePinNameLookup.length; i++) {
       var pinRules = $scope.motatePinNameLookup[i];
@@ -358,7 +361,7 @@ pinoutApp.controller('BoardPinCtrl', function ($scope, $debounce) {
       }
     }
   }
-  
+
   parent.$watch('processorDoc', function(newValue, oldValue) {
     var processor = parent.boardDoc.processor;
     if (parent.processors[processor]) {
@@ -377,7 +380,7 @@ pinoutApp.filter('appropriatePins', function() {
     var arrayFiltered = [];
     for (var i = 0; i < array.length; i++) {
       var pinRules = array[i];
-      
+
       if (pinRules.motate_name.toLocaleLowerCase().indexOf(text.toLocaleLowerCase()) == -1) {
         continue;
       }
@@ -401,7 +404,7 @@ pinoutApp.filter('appropriatePins', function() {
           continue;
         }
       }
-      
+
       arrayFiltered.push(pinRules);
     }
     return arrayFiltered;
@@ -441,7 +444,7 @@ pinoutApp.filter('pinForMotateName', function() {
 pinoutApp.controller('LoginCtrl', function ($scope, $modalInstance, $rootScope, $timeout, $q, server) {
   $scope.server = server;
   $rootScope.loggingIn = true;
-  
+
   $scope.ok = function (scope) {
     $rootScope.loggingIn = false;
     $rootScope.loggedIn = true; // until proven false...
@@ -461,7 +464,7 @@ pinoutApp.config(function($httpProvider) {
       // 'request': function(request) {
 //         // if we're not logged-in to the AngularJS app, redirect to login page
 //         rootScope.loggedIn = rootScope.loggedIn || rootScope.username;
-//         
+//
 //         if (!rootScope.loggedIn && !rootScope.inLogin) {
 //           // $scope.openLogin();
 //           // rootScope.$broadcast(_LOGIN_REQUIRED_);
@@ -471,7 +474,7 @@ pinoutApp.config(function($httpProvider) {
 //         return $q.reject(request);
 //         // return request;
 //       },
-//       
+//
         'responseError': function(rejection) {
         // if we're not logged-in to the web service, redirect to login page
         if (rejection.status === 401 && !rootScope.loggingIn) {

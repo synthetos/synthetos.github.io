@@ -91,23 +91,23 @@
 									</tr>
 									<tr ng-repeat="pin in boardDoc.pins | orderBy:boardPredicate:boardReverse" ng-controller="BoardPinCtrl">
 										<td class="align-left-cell"><input type="number" ng-model="pin.motate_pin" ng-disabled="!isEditingBoard" min="0" max="200"><a class="fix-button btn btn-warning btn-xs" ng-hide="pin.motate_pin|appropriatePinNum:pin.motate_name:motatePinNameLookup" ng-click="fixPinNum(pin)"><span class="glyphicon glyphicon-arrow-left"></span></button></td>
-								
+
 										<td class="align-left-cell">
 											<input type="text" ng-model="pin.motate_name" ng-disabled="!isEditingBoard" placeholder="motate pin name" typeahead="rule.motate_name as rule.motate_name for rule in motatePinNameLookup | appropriatePins:$viewValue:pin:processorPin" typeahead-loading="loadingLocations" class="form-control">
 											<i ng-show="loadingLocations" class="glyphicon glyphicon-refresh"></i>
 										</td>
-								
+
 										<td class="align-left-cell">{{processorPin.pin}}</td>
 										<td class="align-left-cell">{{processorPin.gpio_port+processorPin.gpio_pin}}</td>
-								
+
 										<td class="align-left-cell">
 											<input type="checkbox" ng-model="pin.needs_pwm" ng-disabled="!isEditingBoard+!processorPin.has_pwm">
 											<span ng-if="processorPin.has_pwm">
-												{{processorPin.pwm.type}}&lt;{{processorPin.pwm.number}}&gt; (Ch: {{processorPin.pwm.channel}}<!--, Per: {{processorPin.pwm.peripheral}}-->)
+												{{processorPin.pwm.type}}&lt;{{processorPin.pwm.number}}&gt; 	<span ng-if="processorPin.pwm.type!='PWMTimer'">(Ch: {{processorPin.pwm.channel}}<!--, Per: {{processorPin.pwm.peripheral}}-->)</span>
 												<span ng-if="processorPin.pwm.inverted">&#x293E;</span>
 											</span>
 										</td>
-								
+
 										<td class="align-left-cell">
 											<input type="checkbox" ng-model="pin.needs_spi" ng-disabled="!isEditingBoard+!processorPin.has_spi">
 											<span ng-if="processorPin.has_spi">
@@ -115,7 +115,7 @@
 <!--                        (Per: {{processorPin.spi.peripheral}})-->
 											</span>
 										</td>
-								
+
 										<td class="align-left-cell">
 											<input type="checkbox" ng-model="pin.needs_twi" ng-disabled="!isEditingBoard+!processorPin.has_twi">
 											<span ng-if="processorPin.has_twi">
@@ -123,7 +123,7 @@
 												<!-- (Per: {{processorPin.twi.peripheral}}) -->
 											</span>
 										</td>
-								
+
 										<td class="align-left-cell">
 											<input type="checkbox" ng-model="pin.needs_uart" ng-disabled="!isEditingBoard+!processorPin.has_uart">
 											<span ng-if="processorPin.has_uart">
@@ -131,7 +131,7 @@
 												<!-- (Per: {{processorPin.uart.peripheral}}) -->
 											</span>
 										</td>
-								
+
 									</tr>
 								</table>
 							</form>
@@ -174,11 +174,11 @@
 									</tr>
 									<tr ng-repeat="pin in processorDoc.pins | orderBy:processorPredicate:processorReverse" ng-if="pin.gpio_port||isEditingProcessor">
 										<td class="align-left-cell"><input type="number" ng-model="pin.pin" ng-disabled="!isEditingProcessor" min="0" max="200"></td>
-										
+
 										<td class="align-left-cell">
 											{{pin.gpio_port + pin.gpio_pin}}
 										</td>
-								
+
 										<td class="align-left-cell">
 											<input type="checkbox" ng-model="pin.has_pwm" ng-disabled="!isEditingProcessor">
 											<span ng-if="pin.has_pwm">
@@ -195,7 +195,7 @@
 												<!-- {{pin.pwm.type}}&lt;{{pin.pwm.number}}&gt;::channel = "{{pin.pwm.channel}}" -->
 											</span>
 										</td>
-								
+
 										<td class="align-left-cell">
 											<input type="checkbox" ng-model="pin.has_spi" ng-disabled="!isEditingProcessor">
 											<span ng-if="pin.has_spi">
@@ -204,7 +204,7 @@
 												<select ng-model="$parent.pin.spi.peripheral" ng-disabled="!isEditingProcessor" ng-options="type.value as type.name for type in peripheralOptions"></select>
 											</span>
 										</td>
-								
+
 										<td class="align-left-cell">
 											<input type="checkbox" ng-model="pin.has_twi" ng-disabled="!isEditingProcessor">
 											<span ng-if="pin.has_twi">
@@ -212,7 +212,7 @@
 												<select ng-model="pin.twi.number" ng-disabled="!isEditingProcessor" ng-options="type for type in twiNumberOptions"></select>
 											</span>
 										</td>
-								
+
 										<td class="align-left-cell">
 											<input type="checkbox" ng-model="pin.has_uart" ng-disabled="!isEditingProcessor">
 											<span ng-if="pin.has_uart">
@@ -235,7 +235,7 @@
 								</table>
 							</form>
 						</tab>
-						
+
 						<tab heading="Output">
 <pre class="prettyprint linenums"><span ng-repeat="pin in boardDoc.pins | orderBy:'motate_pin':false" ng-controller="BoardPinCtrl">		_MAKE_MOTATE_PIN({{pin.motate_pin}}, {{processorPin.gpio_port}}, '{{processorPin.gpio_port}}', {{processorPin.gpio_pin}});	// {{pin.motate_name}}<span ng-if="processorPin.has_spi &amp;&amp; processorPin.spi.type=='cs'">
 			_MAKE_MOTATE_SPI_CS_PIN({{pin.motate_pin}}, {{processorPin.spi.peripheral}}, {{processorPin.spi.pin}});</span><span ng-if="processorPin.has_spi &amp;&amp; processorPin.spi.type=='other'">
@@ -266,6 +266,6 @@
 		<script src="javascripts/ngDebounce.js"></script>
 		<script src="javascripts/app.js"></script>
 
-  
+
 	</body>
 	</html>
