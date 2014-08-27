@@ -3,12 +3,14 @@
     {
       "name" : "tinyg-master-380.08",
       "version" : "380.08",
-      "branch" : "master"
+      "branch" : "master",
+      "sum" : "9b80d5a5c9293b7885aa47e8e58f99dc11e4b465"
     },
     {
       "name" : "tinyg-edge-438.02",
       "version" : "438.02",
-      "branch" : "edge"
+      "branch" : "edge",
+      "sum" : "c6c5a042c913e02e8a7cf6bc7677c2a54d33cc86"
     }
   ]
 }
