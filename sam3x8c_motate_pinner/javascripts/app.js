@@ -249,30 +249,30 @@ pinoutApp.controller('PinoutCtrl', ['$rootScope', '$scope', 'cornercouch', '$mod
   // };
 
   scope.logOut = function() {
-    scope.server.login(null, null);
+    // scope.server.login(null, null);
     // $rootScope.$broadcast(_LOGIN_REQUIRED_);
   };
 
   scope.$on(_LOGIN_REQUIRED_, function() {
-    if ($rootScope.loggingIn)
-      return;
-
-    $rootScope.loggingIn = true;
-
-    scope.modalInstance = $modal.open({
-      templateUrl: 'templates/login.html',
-      controller: 'LoginCtrl',
-      resolve: {
-        server: function () { return scope.server; }
-      }
-    });
-
-    scope.modalInstance.result.then(function () {
-      $rootScope.loggingIn = false;
-      console.log('SUCCESS at: ' + new Date());
-    }, function () {
-      console.log('Modal dismissed at: ' + new Date());
-    });
+    // if ($rootScope.loggingIn)
+    //   return;
+    //
+    // $rootScope.loggingIn = true;
+    //
+    // scope.modalInstance = $modal.open({
+    //   templateUrl: 'templates/login.html',
+    //   controller: 'LoginCtrl',
+    //   resolve: {
+    //     server: function () { return scope.server; }
+    //   }
+    // });
+    //
+    // scope.modalInstance.result.then(function () {
+    //   $rootScope.loggingIn = false;
+    //   console.log('SUCCESS at: ' + new Date());
+    // }, function () {
+    //   console.log('Modal dismissed at: ' + new Date());
+    // });
   });
 
 
