@@ -19,7 +19,7 @@ function notLoggedIn(userCtx) {
 function gotVerifiedEmail(assertion) {
   if (assertion) {
     // Verify through CouchDB.
-    var url = 'http://giseburt.iriscouch.com/_browserid';
+    var url = 'https://giseburt.iriscouch.com/_browserid';
     if(typeof window != 'undefined' && window && window.BROWSERID_URL)
       url = window.BROWSERID_URL;
 
@@ -53,7 +53,7 @@ $(document).ready(function() {
   var state = $('<span class="state">Login...</span>');
 
   widget.append(state);
-  $.ajax({ url : 'http://giseburt.iriscouch.com/_session'
+  $.ajax({ url : 'https://giseburt.iriscouch.com/_session'
          , dataType: 'json'
          , success: on_success
          , error  : on_error
@@ -102,7 +102,7 @@ $(document).bind('browserid_login', function(event) {
 });
 
 $(document).bind("browserid_logout", function(event) {
-  $.ajax({ url : 'http://giseburt.iriscouch.com/_session'
+  $.ajax({ url : 'https://giseburt.iriscouch.com/_session'
          , type: 'DELETE'
          , dataType: 'json'
          , success: on_success
