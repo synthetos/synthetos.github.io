@@ -7,10 +7,10 @@
       "sum" : "9b80d5a5c9293b7885aa47e8e58f99dc11e4b465"
     },
     {
-      "name" : "tinyg-edge-440.13",
-      "version" : "440.13",
+      "name" : "tinyg-edge-440.14",
+      "version" : "440.14",
       "branch" : "edge",
-      "sum" : "902c379089b3f4c9d32c107b133199359a45ecea"
+      "sum" : "3417d3e2773c375630acab44eab555d5823e5794"
     }
   ]
 }
