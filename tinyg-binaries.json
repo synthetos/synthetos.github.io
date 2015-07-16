@@ -1,7 +1,7 @@
 {"binaries":
   [
     {
-      "name" : "tinyg-master-440.16.hex",
+      "name" : "tinyg-master-440.16",
       "version" : "440.16",
       "branch" : "master",
       "sum" : "fab193605c00ed7c7398ffb97c377fc96c0065a1"
