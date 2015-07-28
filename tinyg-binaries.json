@@ -1,10 +1,10 @@
 {"binaries":
   [
     {
-      "name" : "tinyg-master-440.16",
-      "version" : "440.16",
+      "name" : "tinyg-master-440.17",
+      "version" : "440.17",
       "branch" : "master",
-      "sum" : "fab193605c00ed7c7398ffb97c377fc96c0065a1"
+      "sum" : "1bedc9793837b9544f73b9312c3e574f507dc12f"
     },
     {
       "name" : "tinyg-edge-440.14",
