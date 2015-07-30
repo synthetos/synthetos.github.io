@@ -8,9 +8,9 @@
     },
     {
       "name" : "tinyg-edge-440.14",
-      "version" : "440.14",
+      "version" : "441.01",
       "branch" : "edge",
-      "sum" : "3417d3e2773c375630acab44eab555d5823e5794"
+      "sum" : "bb11b7d6e48a35862290f94df9f8e2b894af809b"
     }
   ]
 }
