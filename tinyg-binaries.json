@@ -1,24 +1,14 @@
 {"binaries":
   [
     {
-<<<<<<< HEAD
       "name" : "tinyg-master-440.18",
       "version" : "440_18",
-=======
-      "name" : "tinyg-master-440.17",
-      "version" : "440.17",
->>>>>>> 1a15341246308866323f7c8b7c6dddfde61cf932
       "branch" : "master",
       "sum" : "1bedc9793837b9544f73b9312c3e574f507dc12f"
     },
     {
-<<<<<<< HEAD
       "name" : "tinyg-edge-442.04",
       "version" : "442.04",
-=======
-      "name" : "tinyg-edge-441.01",
-      "version" : "441.01",
->>>>>>> 1a15341246308866323f7c8b7c6dddfde61cf932
       "branch" : "edge",
       "sum" : "bb11b7d6e48a35862290f94df9f8e2b894af809b"
     }
