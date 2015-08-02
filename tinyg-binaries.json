@@ -2,15 +2,15 @@
   [
     {
       "name" : "tinyg-master-440.18",
-      "version" : "440_18",
+      "version" : "440.18",
       "branch" : "master",
-      "sum" : "1bedc9793837b9544f73b9312c3e574f507dc12f"
+      "sum" : "71221465c5d36c094b7973a593e2d81922eda232"
     },
     {
       "name" : "tinyg-edge-442.04",
       "version" : "442.04",
       "branch" : "edge",
-      "sum" : "bb11b7d6e48a35862290f94df9f8e2b894af809b"
+      "sum" : "8ab19b3894adf08a252ef2b72c3b2922fa35946c"
     }
   ]
 }
