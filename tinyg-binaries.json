@@ -7,6 +7,12 @@
       "sum" : "71221465c5d36c094b7973a593e2d81922eda232"
     },
     {
+      "name" : "tinyg-master-440.19",
+      "version" : "440.19",
+      "branch" : "master-candidate",
+      "sum" : "0c32d212584a7d77f09676a1d64548b6baf734fe"
+    },
+    {
       "name" : "tinyg-edge-442.04",
       "version" : "442.04",
       "branch" : "edge",
