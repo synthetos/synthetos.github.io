@@ -29,11 +29,12 @@
     "sum" : "e3d20a76134e971266ffd62de2f2a8f7e097f214"
   },
 
-  "COMMENT-001": "Fuses are in a specific order, 0 through 4!!",
+  "COMMENT-001": "Fuses are in a specific order, 0 through 5. 3 is null since it's not programmed!!",
   "fuses":
     [
       "0xFF",
       "0x00",
+      null,
       "0xBE",
       "0xFE",
       "0xEB"
