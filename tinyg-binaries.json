@@ -22,7 +22,7 @@
   ],
 
   "COMMENT-000": "This is the bootloader.",
-  "xboot":
+  "bootloader":
   {
     "name" : "xboot",
     "version" : "0.1",
@@ -43,7 +43,7 @@
   "programmers":
   [
     {
-      "name": "AAVR ISP MKII",
+      "name": "AVR ISP MKII",
       "avrdude_name" : "avrisp2"
     }
   ]
