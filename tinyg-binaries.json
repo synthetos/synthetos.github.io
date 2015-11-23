@@ -37,5 +37,14 @@
       "0xBE",
       "0xFE",
       "0xEB"
-    ]
+    ],
+
+  "COMMENT-002": "Types of supported hardware programmers, and their AVRDude names",
+  "programmers":
+  [
+    {
+      "name": "AAVR ISP MKII",
+      "avrdude_name" : "avrisp2"
+    }
+  ]
 }
